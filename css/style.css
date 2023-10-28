@@ -235,7 +235,7 @@ a:focus, .button:focus, button:focus, .btn:focus {
 
 /* line 143, E:/169 Dingo Restaurant/169 Dingo Restaurant/169_Dingo_Restautent_html/sass/_common.scss */
 .section_tittle {
-  margin-bottom: 70px;
+  margin-bottom: 20px;
 }
 
 @media (max-width: 576px) {
@@ -562,6 +562,45 @@ ul {
     padding: 9.5px 28px;
   }
 }
+
+.signout_btn {
+  display: inline-block;
+  padding: 9.5px 28px;
+  border-radius: 50px;
+  background-color: #ff1616;
+  font-size: 14px;
+  font-weight: 400;
+  color: #fff;
+  -webkit-transition: 0.5s;
+  transition: 0.5s;
+  text-transform: capitalize;
+  border: 2px solid transparent;
+}
+
+.signout_btn:hover {
+  color: #ff0000;
+  background-color: #fff;
+  border: 2px solid rgb(255, 0, 0);
+}
+
+@media (max-width: 576px) {
+  .signout_btn {
+    padding: 9.5px 28px;
+  }
+}
+
+@media only screen and (min-width: 576px) and (max-width: 767px) {
+  .signout_btn {
+    padding: 9.5px 28px;
+  }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 991px) {
+  .signout_btn {
+    padding: 9.5px 28px;
+  }
+}
+
 /* line 52, E:/169 Dingo Restaurant/169 Dingo Restaurant/169_Dingo_Restautent_html/sass/_button.scss */
 .single_page_btn {
   display: inline-block;
@@ -682,7 +721,7 @@ ul {
 /* line 169, E:/169 Dingo Restaurant/169 Dingo Restaurant/169_Dingo_Restautent_html/sass/_button.scss */
 .btn_4 {
   display: inline-block;
-  font-size: 14px;
+  font-size: 16px;
   color: #fff;
   text-transform: capitalize;
   -webkit-transition: 0.5s;
@@ -2242,7 +2281,7 @@ ul {
 
 /* line 18, E:/169 Dingo Restaurant/169 Dingo Restaurant/169_Dingo_Restautent_html/sass/_menu.scss */
 .main_menu .navbar {
-  padding: 22px 0px;
+  padding: 16px 0px;
 }
 
 /* line 21, E:/169 Dingo Restaurant/169 Dingo Restaurant/169_Dingo_Restautent_html/sass/_menu.scss */
@@ -2255,7 +2294,7 @@ ul {
 .main_menu .main-menu-item ul li a {
   color: #2c3033 !important;
   font-size: 16px;
-  padding: 0px 22px !important;
+  padding: 0px 20px !important;
   font-family: "Lora", serif;
 }
 
@@ -3232,7 +3271,7 @@ ul {
 /**************** food_menu css start ****************/
 /* line 2, E:/169 Dingo Restaurant/169 Dingo Restaurant/169_Dingo_Restautent_html/sass/_food_menu.scss */
 .food_menu {
-  padding: 140px 0px 90px;
+  padding: 15px 0px 90px;
 }
 
 @media (max-width: 576px) {
@@ -3375,6 +3414,7 @@ ul {
 .food_menu .single_food_item {
   margin-bottom: 50px;
   background-color: #fff;
+  border-radius: 20px;
 }
 
 @media (max-width: 576px) {
@@ -3382,6 +3422,7 @@ ul {
   .food_menu .single_food_item {
     margin-bottom: 20px;
     padding: 10px;
+    border-radius: 20px;
   }
 }
 
@@ -3390,6 +3431,7 @@ ul {
   .food_menu .single_food_item {
     margin-bottom: 20px;
     padding: 10px;
+    border-radius: 20px;
   }
 }
 
@@ -3398,6 +3440,7 @@ ul {
   .food_menu .single_food_item {
     margin-bottom: 20px;
     padding: 10px;
+    border-radius: 20px;
   }
 }
 
@@ -3405,13 +3448,14 @@ ul {
   /* line 80, E:/169 Dingo Restaurant/169 Dingo Restaurant/169_Dingo_Restautent_html/sass/_food_menu.scss */
   .food_menu .single_food_item {
     margin-bottom: 30px;
+    border-radius: 20px;
   }
 }
 
 /* line 98, E:/169 Dingo Restaurant/169 Dingo Restaurant/169_Dingo_Restautent_html/sass/_food_menu.scss */
-.food_menu .single_food_item img {
-  border-right: 10px solid #f6f5f1;
-}
+/* .food_menu .single_food_item img {
+  border-right: 2px solid #f6f5f1;
+} */
 
 @media (max-width: 576px) {
   /* line 98, E:/169 Dingo Restaurant/169 Dingo Restaurant/169_Dingo_Restautent_html/sass/_food_menu.scss */
@@ -3421,7 +3465,7 @@ ul {
     display: block;
     margin-right: auto !important;
     text-align: center;
-    border-radius: 50%;
+    border-radius: 20px;
   }
 }
 
@@ -3433,7 +3477,7 @@ ul {
     display: block;
     margin-right: auto !important;
     text-align: center;
-    border-radius: 50%;
+    border-radius: 20px;
   }
 }
 
@@ -3445,8 +3489,7 @@ ul {
     display: block;
     margin-right: auto !important;
     text-align: center;
-    border-radius: 50%;
-  }
+    border-radius: 20px;  }
 }
 
 /* line 128, E:/169 Dingo Restaurant/169 Dingo Restaurant/169_Dingo_Restautent_html/sass/_food_menu.scss */

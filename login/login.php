@@ -27,7 +27,6 @@ if (isset($_POST['submit'])) {
 }
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -69,6 +68,7 @@ if (isset($_POST['submit'])) {
                     <div class="signin-image">
                         <figure><img src="images/laptop.gif" alt="sing up image"></figure>
                         <a href="register.php" class="signup-image-link">Create an account</a>
+                        <a href="forgot-pass.php" class="signup-image-link">Forgot Password</a>
                     </div>
 
                     <?php
@@ -111,7 +111,7 @@ if (isset($_POST['submit'])) {
                         </form>
                         <br>
                         <a href="../index.php" class="signup-image-link">Continue as Guest</a>
-                        <a href="../admin/admin_login.php" class="signup-image-link">Login as Admin</a>
+                        <a href="../admin/pages/ltr/admin_login.php" class="signup-image-link">Login as Admin</a>
                         <!-- <div class="social-login">
                             <span class="social-label">Or login with</span>
                             <ul class="socials">

@@ -186,14 +186,16 @@ if (isset($_POST['clear_cart']) && $_POST['clear_cart'] === 'true') {
         body {
             font-family: Arial, sans-serif !important;
         }
-/* Table Styles */
+
+        /* Table Styles */
         .table-container {
             padding-left: 20px;
             padding-right: 20px;
         }
 
         .table.table-bordered {
-            border: none;
+            border-left: none;
+            border-right: none;
         }
 
         .table-bordered th,
@@ -203,8 +205,9 @@ if (isset($_POST['clear_cart']) && $_POST['clear_cart'] === 'true') {
         }
 
         .rounded-row {
-            border: none;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 0, 0, 0.2);
+            border-left: none;
+            border-right: none;
             background-color: white;
         }
 
@@ -221,66 +224,7 @@ if (isset($_POST['clear_cart']) && $_POST['clear_cart'] === 'true') {
 </head>
 
 <body>
-    <!--::header part start::-->
-    <header class="main_menu">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-12">
-                    <nav class="navbar navbar-expand-lg navbar-light">
-                        <a class="navbar-brand" href="index.php"> <img src="pictures/logo.png" alt="logo" style="height: 120px; width:120px;"> </a>
-                        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                            <span class="navbar-toggler-icon"></span>
-                        </button>
-
-                        <div class="collapse navbar-collapse main-menu-item justify-content-end" id="navbarSupportedContent">
-                            <ul class="navbar-nav">
-                                <li class="nav-item">
-                                    <a class="nav-link" href="index.php">Home</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="about.php">About</a>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="products.php">Our Products</a>
-                                </li>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        Blog
-                                    </a>
-                                    <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                        <a class="dropdown-item" href="blog.html">Blog</a>
-                                        <a class="dropdown-item" href="single-blog.html">Single blog</a>
-                                    </div>
-                                </li>
-                                <li class="nav-item">
-                                    <a class="nav-link" href="contact.php">Contact</a>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="menu_btn">
-                            <a href="cart.php" class="single_page_btn d-none d-sm-block"><i class="fa-solid fa-cart-shopping"></i>
-                                Shopping Cart</a>
-                        </div>
-                        <?php
-                        // Check if user is logged in
-                        if (isset($_SESSION['user_id'])) {
-                            // Display logout button if logged in
-                            echo '<a href="logout.php" class="single_page_btn d-none d-sm-block ml-2"">';
-                            echo '<i class="fas fa-sign-in-alt"></i> Logout';
-                            echo '</a>';
-                        } else {
-                            // Display login button if user not logged in
-                            echo '<a href="login/login.php" class="single_page_btn d-none d-sm-block ml-2">';
-                            echo '<i class="fas fa-sign-in-alt"></i> Login';
-                            echo '</a>';
-                        }
-                        ?>
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </header>
-    <!-- Header part end-->
+    <?php include 'header.php'; ?>
 
     <!-- breadcrumb start-->
     <section class="breadcrumb breadcrumb_bg">
@@ -297,14 +241,12 @@ if (isset($_POST['clear_cart']) && $_POST['clear_cart'] === 'true') {
         </div>
     </section>
     <!-- breadcrumb start-->
-
     <!-- Cart Start -->
-    <section class="food_menu gray_bg">
-        <div class="container">
+    <section>
+        <div class="container mt-3">
             <div class="row justify-content-between">
                 <div class="col-lg-5">
                     <div class="section_tittle">
-                        <p>Your Shopping Cart</p>
                         <h2>My Cart</h2>
                     </div>
                 </div>
@@ -321,11 +263,11 @@ if (isset($_POST['clear_cart']) && $_POST['clear_cart'] === 'true') {
                                         <th>Product Name</th>
                                         <th>Price</th>
                                         <th>Quantity</th>
-                                        <th>Total Price</th>
+                                        <th>Total</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
-                                
+
                                 <tbody>
                                     <?php while ($row = $result->fetch_assoc()) : ?>
                                         <?php
@@ -342,7 +284,7 @@ if (isset($_POST['clear_cart']) && $_POST['clear_cart'] === 'true') {
                                         <tr class="rounded-row">
                                             <td><img src="uploads/<?php echo $product_image; ?>" alt="<?php echo $product_name; ?>" width="100"></td>
                                             <td><?php echo $product_name; ?></td>
-                                            <td>RM <?php echo number_format($product_price, 2); ?></td>
+                                            <td style="font-weight: bold;">RM <?php echo number_format($product_price, 2); ?></td>
                                             <td>
                                                 <div class="input-group">
                                                     <input type="hidden" id="stock-<?php echo $cart_id; ?>" value="<?php echo $product_stock; ?>">
@@ -351,7 +293,7 @@ if (isset($_POST['clear_cart']) && $_POST['clear_cart'] === 'true') {
                                                     <button class="btn btn-outline-secondary" onclick="adjustQuantity(<?php echo $cart_id; ?>, 1, <?php echo $product_price; ?>)">+</button>
                                                 </div>
                                             </td>
-                                            <td id="total-price-<?php echo $cart_id; ?>">RM <?php echo number_format($totalProductPrice, 2); ?></td>
+                                            <td id="total-price-<?php echo $cart_id; ?>" style="font-weight: bold;">RM <?php echo number_format($totalProductPrice, 2); ?></td>
                                             <td>
                                                 <a href="cart.php?delete=true&cart_id=<?php echo $cart_id; ?>" class="btn btn-danger rounded-circle" onclick="return confirmDelete();">
                                                     <i class="fa fa-trash"></i>
@@ -361,27 +303,46 @@ if (isset($_POST['clear_cart']) && $_POST['clear_cart'] === 'true') {
                                     <?php endwhile; ?>
                                 </tbody>
                             </table>
+
+
+                            <div class="row">
+                                <div class="col-lg-7">
+                                    <!-- Clear All button -->
+                                    <form method="POST" action="" style="float: left;">
+                                        <input type="hidden" name="clear_cart" value="true">
+                                        <button type="submit" class="btn_4" style="border: none;">
+                                            <i class="fas fa-trash"></i> Clear All
+                                        </button>
+                                    </form>
+                                    <!-- Continue Shop button -->
+                                    <a href="products.php" class="btn_4" style="float: left; margin-left: 10px;">
+                                        <i class="fa-solid fa-circle-chevron-left"></i> Continue Shopping
+                                    </a>
+                                </div>
+                                <div class="col-lg-5">
+                                    <!-- Light Grey Box -->
+                                    <div style="background-color: #ededed; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+                                        <!-- Total Price -->
+                                        <h3 style="font-family: Arial; font-weight:bold">Cart Total</h3>
+                                        <br>
+                                        <h4 style="font-family: Arial; font-weight: bold;">Total Price: <span class="fw-bold text-primary" id="total-price" style="color: black;float:right;">RM <?php echo number_format($totalPrice, 2); ?></span></span></h3>
+                                            <!-- Check Out button -->
+                                            <div style="text-align: center;">
+                                                <hr style="border: 1px solid #ccc; margin: 0 0 20px;">
+                                                <form action="payment.php" method="POST">
+                                                    <input type="hidden" name="total_price" value="<?php echo $totalPrice; ?>">
+                                                    <input type="hidden" name="cart_id" value="<?php echo $cart_id; ?>">
+                                                    <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
+                                                    <button type="submit" class="btn_4" style="border: none;width: 100%;">
+                                                        <i class="fas fa-shopping-cart"></i> Check Out
+                                                    </button>
+                                                </form>
+                                            </div>
+                                    </div>
+                                </div>
+
+                            </div>
                         </div> <!-- End of table-container -->
-                        <!-- Total Price -->
-                <h3>Total Price: <span class="fw-bold text-primary" id="total-price">RM <?php echo number_format($totalPrice, 2); ?></span></h3>
-                <div class="button-container">
-                    <!-- Clear All button -->
-                    <form method="POST" action="">
-                        <input type="hidden" name="clear_cart" value="true">
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash"></i> Clear All
-                        </button>
-                    </form>
-                    <!-- Check Out button -->
-                    <form action="payment.php" method="POST">
-                        <input type="hidden" name="total_price" value="<?php echo $totalPrice; ?>">
-                        <input type="hidden" name="cart_id" value="<?php echo $cart_id; ?>">
-                        <input type="hidden" name="user_id" value="<?php echo $user_id; ?>">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-shopping-cart"></i> Check Out
-                        </button>
-                    </form>
-                </div>
                     <?php } else {
                         echo ' <div class="text-center">
                     <img src="img/speech.gif" alt="Empty Cart" width="360px" height="360px">
@@ -454,81 +415,9 @@ if (isset($_POST['clear_cart']) && $_POST['clear_cart'] === 'true') {
         }
     </script>
 
-    <!-- footer part start-->
-    <footer class="footer-area">
-        <div class="container">
-            <div class="row">
-                <div class="col-xl-3 col-sm-6 col-md-4">
-                    <div class="single-footer-widget footer_1">
-                        <h4>About Us</h4>
-                        <p>Heaven fruitful doesn't over for these theheaven fruitful doe over days
-                            appear creeping seasons sad behold beari ath of it fly signs bearing
-                            be one blessed after.</p>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-sm-6 col-md-4">
-                    <div class="single-footer-widget footer_2">
-                        <h4>Important Link</h4>
-                        <div class="contact_info">
-                            <ul>
-                                <li><a href="#">WHMCS-bridge</a></li>
-                                <li><a href="#"> Search Domain</a></li>
-                                <li><a href="#">My Account</a></li>
-                                <li><a href="#">Shopping Cart</a></li>
-                                <li><a href="#"> Our Shop</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-sm-6 col-md-4">
-                    <div class="single-footer-widget footer_2">
-                        <h4>Contact us</h4>
-                        <div class="contact_info">
-                            <p><span> Address :</span>Hath of it fly signs bear be one blessed after </p>
-                            <p><span> Phone :</span> +2 36 265 (8060)</p>
-                            <p><span> Email : </span>info@colorlib.com </p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-xl-3 col-sm-8 col-md-6">
-                    <div class="single-footer-widget footer_3">
-                        <h4>Newsletter</h4>
-                        <p>Heaven fruitful doesn't over lesser in days. Appear creeping seas</p>
-                        <form action="#">
-                            <div class="form-group">
-                                <div class="input-group mb-3">
-                                    <input type="text" class="form-control" placeholder='Email Address' onfocus="this.placeholder = ''" onblur="this.placeholder = 'Email Address'">
-                                    <div class="input-group-append">
-                                        <button class="btn" type="button"><i class="fas fa-paper-plane"></i></button>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-            <div class="copyright_part_text">
-                <div class="row">
-                    <div class="col-lg-8">
-                        <p class="footer-text m-0"><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
-                            Copyright &copy;<script>
-                                document.write(new Date().getFullYear());
-                            </script> All rights reserved | This template is made with <i class="ti-heart" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
-                            <!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></p>
-                    </div>
-                    <div class="col-lg-4">
-                        <div class="copyright_social_icon text-right">
-                            <a href="#"><i class="fab fa-facebook-f"></i></a>
-                            <a href="#"><i class="fab fa-twitter"></i></a>
-                            <a href="#"><i class="ti-dribbble"></i></a>
-                            <a href="#"><i class="fab fa-behance"></i></a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
-    <!-- footer part end-->
+    <?php 
+    include 'footer.html';
+    ?>
 
     <!-- jquery plugins here-->
     <!-- jquery -->

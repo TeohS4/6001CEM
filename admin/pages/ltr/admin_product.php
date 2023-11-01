@@ -79,6 +79,7 @@ if (isset($_GET['delete'])) {
 
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -90,7 +91,7 @@ if (isset($_GET['delete'])) {
     <title>Manage Products</title>
     <link rel="canonical" href="https://www.wrappixel.com/templates/niceadmin-lite/" />
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="../../assets/images/favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../pictures/admin logo.png">
     <!-- Custom CSS -->
     <link href="../../dist/css/style.min.css" rel="stylesheet">
     <style>
@@ -99,8 +100,6 @@ if (isset($_GET['delete'])) {
             box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.3);
             padding: 20px;
         }
-
-
 
         .glowing-button {
             animation: glowing 2s infinite;
@@ -121,7 +120,7 @@ if (isset($_GET['delete'])) {
         }
     </style>
     <script src="https://kit.fontawesome.com/a84d485a7a.js" crossorigin="anonymous"></script>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous">
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-iYQeCzEYFbKjA/T2uDLTpkwGzCiq6soy8tYaI1GyVh/UjpbCx/TYkiZhlZB6+fzT" crossorigin="anonymous"> -->
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
@@ -135,8 +134,9 @@ if (isset($_GET['delete'])) {
         </div>
     </div>
     <!-- Main wrapper -->
-    <div id="main-wrapper" data-navbarbg="skin6" data-theme="light" data-layout="vertical" data-sidebartype="full" data-boxed-layout="full">
-        <?php 
+    <div id="main-wrapper" data-navbarbg="skin6" data-theme="light" data-layout="vertical" data-sidebartype="full"
+        data-boxed-layout="full">        
+        <?php
         include 'header.php';
         ?>
         <!-- Page wrapper  -->
@@ -144,8 +144,8 @@ if (isset($_GET['delete'])) {
             <!-- Bread crumb and right sidebar toggle -->
             <div class="page-breadcrumb">
                 <div class="row">
-                    <div class="col-5 align-self-center">
-                        <h4 class="page-title"><i class="fas fa-edit"></i> Product Management</h4>
+                <div class="col-5 align-self-center">
+                        <h4 class="page-title">Manage Products</h4>
                     </div>
                 </div>
             </div>
@@ -155,157 +155,154 @@ if (isset($_GET['delete'])) {
                 <div class="row">
                     <div class="col-12">
                         <div class="card card-body">
-                            <h4 class="card-title">Manage Products</h4>
                             <h5 class="card-subtitle"> Add a Product </h5>
                             <!-- Add Product Start-->
-                                <!-- Add Product Button -->
-                                <button type="button" class="btn btn-success glowing-button" data-bs-toggle="modal" data-bs-target="#addProductModal">
-                                    <i class="fa-solid fa-add"></i> ADD PRODUCT
-                                </button>
+                            <!-- Add Product Button -->
+                            <button type="button" class="btn btn-success glowing-button" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                                <i class="fa-solid fa-add"></i> ADD PRODUCT
+                            </button>
 
-                                <!-- Add Module -->
-                                <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductModalLabel" aria-hidden="true">
-                                    <div class="modal-dialog" role="document">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title" id="addProductModalLabel">Add Product</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                            </div>
-                                            <div class="modal-body">
+                            <!-- Add Module -->
+                            <div class="modal fade" id="addProductModal" tabindex="-1" role="dialog" aria-labelledby="addProductModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="addProductModalLabel">Add Product</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form action="" method="post" class="add-item-form" enctype="multipart/form-data">
+                                                <!-- Your form content here -->
                                                 <form action="" method="post" class="add-item-form" enctype="multipart/form-data">
-                                                    <!-- Your form content here -->
-                                                    <form action="" method="post" class="add-item-form" enctype="multipart/form-data">
-                                                        <label>Product Name</label>
-                                                        <input type="text" name="product_name" placeholder="Product Name" class="form-control"><br>
-                                                        <!-- Category Selection -->
-                                                        <label>Choose Category</label>
-                                                        <select class="form-control" name="category" id="category">
-                                                            <option value="Cutlery & Cups">Cutlery & Cups</option>
-                                                            <option value="Bags">Bags</option>
-                                                            <option value="Plates">Plates</option>
-                                                            <option value="Food Containers">Food Containers</option>
-                                                        </select><br>
-                                                        <label>Product Price (RM)</label>
-                                                        <input type="text" name="product_price" placeholder="Product Price" class="form-control"><br>
-                                                        <label>Product Description</label>
-                                                        <textarea name="product_des" placeholder="Product Description" rows="4" cols="50" class="form-control"></textarea><br>
-                                                        <label>Enter Stock Amount</label>
-                                                        <input type="number" name="stock" placeholder="Stock Amount" class="form-control"><br>
-                                                        <label>Insert Image</label>
-                                                        <input type="file" name="product_image" class="form-control" accept="image/png, image/jpg, image/jpeg"><br>
-                                                        <input type="submit" name="add_product" value="Add product" class="btn btn-primary">
-                                                    </form>
+                                                    <label>Product Name</label>
+                                                    <input type="text" name="product_name" placeholder="Product Name" class="form-control"><br>
+                                                    <!-- Category Selection -->
+                                                    <label>Choose Category</label>
+                                                    <select class="form-control" name="category" id="category">
+                                                        <option value="Cutlery & Cups">Cutlery & Cups</option>
+                                                        <option value="Bags">Bags</option>
+                                                        <option value="Plates">Plates</option>
+                                                        <option value="Food Containers">Food Containers</option>
+                                                    </select><br>
+                                                    <label>Product Price (RM)</label>
+                                                    <input type="text" name="product_price" placeholder="Product Price" class="form-control"><br>
+                                                    <label>Product Description</label>
+                                                    <textarea name="product_des" placeholder="Product Description" rows="4" cols="50" class="form-control"></textarea><br>
+                                                    <label>Enter Stock Amount</label>
+                                                    <input type="number" name="stock" placeholder="Stock Amount" class="form-control"><br>
+                                                    <label>Insert Image</label>
+                                                    <input type="file" name="product_image" class="form-control" accept="image/png, image/jpg, image/jpeg"><br>
+                                                    <input type="submit" name="add_product" value="Add product" class="btn btn-primary">
+                                                </form>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <?php
+                            $sql = "SELECT * FROM products";
+                            $result = $db->query($sql);
+                            $db->close();
+                            ?>
+                            <br><br>
+                            <?php
+                            if (isset($message)) {
+                                foreach ($message as $message) {
+                                    echo '<div class="alert alert-info alert-dismissible fade show" role="alert">
+                                            <i class="fa-solid fa-bell"></i> ' . $message .
+                                        '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                            </div>';
+                                };
+                            };
+                            ?>
+                            <!-- end add product -->
+                            <!-- Edit Product -->
+                            <!-- List of product Table -->
+                            <table class="table table-striped table-hover rounded">
+                                <tr>
+                                    <th class=""></th>
+                                    <th class="">Product Name</th>
+                                    <th class="">Category</th>
+                                    <th class="">Price</th>
+                                    <th class="">Description</th>
+                                    <th class="">Stocks</th>
+                                    <th class="">Actions</th>
+                                </tr>
+                                <?php
+                                while ($row = $result->fetch_assoc()) {
+                                ?>
+                                    <tr>
+                                        <td><img src="../../../uploads/<?php echo $row['product_image']; ?>" width="100px" height="100px"></td>
+                                        <td><?php echo $row['product_name']; ?></td>
+                                        <td><?php echo $row['category']; ?></td>
+                                        <td>RM <?php echo $row['product_price']; ?></td>
+                                        <td><?php echo $row['product_des']; ?></td>
+                                        <td><?php echo $row['stock']; ?></td>
+                                        <td>
+                                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal<?php echo $row['product_id']; ?>"><i class="fa-solid fa-pen"></i></button>
+                                            <br><br>
+                                            <a href="admin_product.php?delete=<?php echo $row['product_id']; ?>" onclick="return confirm('Delete this product?')" class="btn btn-danger">
+                                            <i class="fa-solid fa-trash"></i></a>
+                                        </td>
+                                    </tr>
+
+                                    <!-- UPDATE Edit Modal Pop Up -->
+                                    <div class="modal fade" id="editModal<?php echo $row['product_id']; ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h1 class="modal-title fs-5" id="exampleModalLabel"><i class="fa-solid fa-pen-to-square"></i> Edit Products</h1>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <form action="" method="post" enctype="multipart/form-data">
+                                                    <div class="modal-body">
+                                                        <!-- Add a container for the existing image preview -->
+                                                        <div class="image-preview d-flex justify-content-center align-items-center">
+                                                            <img src="../../../uploads/<?php echo $row['product_image']; ?>" alt="Existing Image" width="150">
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label><b>Product Name</b></label>
+                                                            <input type="text" name="product_name" value="<?php echo $row['product_name']; ?>" class="form-control">
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <!-- Category Selection -->
+                                                            <label><b>Category</b></label>
+                                                            <select class="form-control" name="category" id="category">
+                                                                <option value="Cutlery & Cups">Cutlery & Cups</option>
+                                                                <option value="Bags">Bags</option>
+                                                                <option value="Plates">Plates</option>
+                                                                <option value="Food Containers">Food Containers</option>
+                                                            </select>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label><b>Price</b></label>
+                                                            <input type="text" name="product_price" value="<?php echo $row['product_price']; ?>" class="form-control">
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <label><b>Product Description</b></label>
+                                                            <input type="text" name="product_des" value="<?php echo $row['product_des']; ?>" class="form-control">
+                                                        </div><br>
+                                                        <div class="form-group">
+                                                            <label><b>Stocks</b></label>
+                                                            <input type="number" name="stock" value="<?php echo $row['stock']; ?>" class="form-control">
+                                                        </div><br>
+                                                        <div class="form-group">
+                                                            <label><b>Insert Image</b></label>
+                                                            <input type="file" name="profile" class="form-control form-control-sm" accept="image/png, image/jpg, image/jpeg">
+                                                        </div>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <input type="hidden" name="edit_id" value="<?php echo $row['product_id']; ?>">
+                                                        <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
+                                                        <button type="submit" class="btn btn-primary" name="update">Save Changes</button>
+                                                    </div>
                                                 </form>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-
-                                <?php
-                                $sql = "SELECT * FROM products";
-                                $result = $db->query($sql);
-                                $db->close();
-                                ?>
-                                <br><br>
-                                <?php
-                                if (isset($message)) {
-                                    foreach ($message as $message) {
-                                        echo '<div class="alert alert-info alert-dismissible fade show" role="alert">
-        <i class="fa-solid fa-bell"></i> ' . $message .
-                                            '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>';
-                                    };
-                                };
-                                ?>
-                                <!-- end add product -->
-                                <!-- Edit Product -->
-                                <!-- List of product Table -->
-                                    <table class="table table-striped table-hover rounded">
-                                        <tr>
-                                            <th class="">Image</th>
-                                            <th class="">Product Name</th>
-                                            <th class="">Category</th>
-                                            <th class="">Product Price</th>
-                                            <th class="">Product Description</th>
-                                            <th class="">Stocks</th>
-                                            <th class="">Actions</th>
-                                        </tr>
-                                        <?php
-                                        while ($row = $result->fetch_assoc()) {
-                                        ?>
-                                            <tr>
-                                                <td><img src="../../../uploads/<?php echo $row['product_image']; ?>" width="100px" height="100px"></td>
-                                                <td><?php echo $row['product_name']; ?></td>
-                                                <td><?php echo $row['category']; ?></td>
-                                                <td>RM <?php echo $row['product_price']; ?></td>
-                                                <td><?php echo $row['product_des']; ?></td>
-                                                <td><?php echo $row['stock']; ?></td>
-                                                <td>
-                                                    <button type="button" class="btn btn-success editBtn" style="box-shadow: -1px 8px 20px 1px rgba(143,159,209,0.66);" data-bs-toggle="modal" data-bs-target="#editModal<?php echo $row['product_id']; ?>"><i class="fa-solid fa-pen-to-square"></i></button>
-                                                    <br><br>
-                                                    <a href="admin_product.php?delete=<?php echo $row['product_id']; ?>" onclick="return confirm('Delete this product?')" class="btn btn-danger" style="box-shadow: -1px 8px 20px 1px rgba(143,159,209,0.66);">
-                                                        <i class="fas fa-trash"></i></a>
-                                                </td>
-                                            </tr>
-
-                                            <!-- UPDATE Edit Modal Pop Up -->
-                                            <div class="modal fade" id="editModal<?php echo $row['product_id']; ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                                                <div class="modal-dialog">
-                                                    <div class="modal-content">
-                                                        <div class="modal-header">
-                                                            <h1 class="modal-title fs-5" id="exampleModalLabel"><i class="fa-solid fa-pen-to-square"></i> Edit Products</h1>
-                                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                                        </div>
-                                                        <form action="" method="post" enctype="multipart/form-data">
-                                                            <div class="modal-body">
-                                                                <!-- Add a container for the existing image preview -->
-                                                                <div class="image-preview d-flex justify-content-center align-items-center">
-                                                                    <img src="../../../uploads/<?php echo $row['product_image']; ?>" alt="Existing Image" width="150">
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <label><b>Product Name</b></label>
-                                                                    <input type="text" name="product_name" value="<?php echo $row['product_name']; ?>" class="form-control">
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <!-- Category Selection -->
-                                                                    <label><b>Category</b></label>
-                                                                    <select class="form-control" name="category" id="category">
-                                                                        <option value="Cutlery & Cups">Cutlery & Cups</option>
-                                                                        <option value="Bags">Bags</option>
-                                                                        <option value="Plates">Plates</option>
-                                                                        <option value="Food Containers">Food Containers</option>
-                                                                    </select>
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <label><b>Price</b></label>
-                                                                    <input type="text" name="product_price" value="<?php echo $row['product_price']; ?>" class="form-control">
-                                                                </div>
-                                                                <div class="form-group">
-                                                                    <label><b>Product Description</b></label>
-                                                                    <input type="text" name="product_des" value="<?php echo $row['product_des']; ?>" class="form-control">
-                                                                </div><br>
-                                                                <div class="form-group">
-                                                                    <label><b>Stocks</b></label>
-                                                                    <input type="number" name="stock" value="<?php echo $row['stock']; ?>" class="form-control">
-                                                                </div><br>
-                                                                <div class="form-group">
-                                                                    <label><b>Insert Image</b></label>
-                                                                    <input type="file" name="profile" class="form-control form-control-sm" accept="image/png, image/jpg, image/jpeg">
-                                                                </div>
-                                                            </div>
-                                                            <div class="modal-footer">
-                                                                <input type="hidden" name="edit_id" value="<?php echo $row['product_id']; ?>">
-                                                                <button type="button" class="btn btn-dark" data-bs-dismiss="modal">Close</button>
-                                                                <button type="submit" class="btn btn-primary" name="update">Save Changes</button>
-                                                            </div>
-                                                        </form>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        <?php } ?>
-                                    </table>
-                                
-                            
+                                <?php } ?>
+                            </table>
 
                             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-u1OknCvxWvY5kfmNBILK2hRnQC3Pr17a+RTT6rIHI7NnikvbZlHgTPOOmMi466C8" crossorigin="anonymous"></script>
                             <script>
@@ -331,39 +328,16 @@ if (isset($_GET['delete'])) {
                         </div>
                     </div>
                 </div>
-                <!-- ============================================================== -->
-                <!-- End PAge Content -->
-                <!-- ============================================================== -->
-                <!-- ============================================================== -->
-                <!-- Right sidebar -->
-                <!-- ============================================================== -->
-                <!-- .right-sidebar -->
-                <!-- ============================================================== -->
-                <!-- End Right sidebar -->
-                <!-- ============================================================== -->
             </div>
             <!-- ============================================================== -->
             <!-- End Container fluid  -->
-            <!-- ============================================================== -->
-            <!-- footer -->
-            <!-- ============================================================== -->
             <footer class="footer text-center">
                 Designed and Developed by
                 <a href="">Teoh</a>.
             </footer>
-            <!-- ============================================================== -->
-            <!-- End footer -->
-            <!-- ============================================================== -->
         </div>
-        <!-- ============================================================== -->
-        <!-- End Page wrapper  -->
-        <!-- ============================================================== -->
     </div>
-    <!-- ============================================================== -->
-    <!-- End Wrapper -->
-    <!-- ============================================================== -->
-    <!-- All Jquery -->
-    <!-- ============================================================== -->
+
     <script src="../../assets/libs/jquery/dist/jquery.min.js"></script>
     <!-- Bootstrap tether Core JavaScript -->
     <script src="../../assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

@@ -1,20 +1,11 @@
 <?php
 session_start();
-// News API Integration
-$url = 'https://newsapi.org/v2/everything?q=sustainable&';
-$key = '1f816631501047999c8561cc58b5dae0';
+// GNews API Integration
+$key = '35eb6917990b5d44d479f54ca02908a2';
+$url = "https://gnews.io/api/v4/search?q=sustainable&apikey=$key&lang=en";
 
-// Build the API request URL without custom query parameters
-$request_url = $url . 'apiKey=' . $key;
-
-// Make an API request
-$ch = curl_init($request_url);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-$response = curl_exec($ch);
-curl_close($ch);
-
-// Process the API response (assuming JSON format)
-$data = json_decode($response, true);
+// use GET request to the API
+$response = file_get_contents($url);
 ?>
 
 <!doctype html>
@@ -74,35 +65,41 @@ $data = json_decode($response, true);
                     </div>
                     <div class="blog_left_sidebar">
                         <?php
-                        // Display news article form api
-                        if ($data && isset($data['articles'])) {
-                            $articles = $data['articles'];
+                        if ($response !== false) {
+                            // Decode json string into php readable format
+                            $data = json_decode($response, true);
 
-                            $articles = array_slice($articles, 0, 20);
+                            // Check if the API response contains articles
+                            if (isset($data['articles'])) {
+                                $articles = $data['articles'];
 
-                            foreach ($articles as $article) {
-                                echo '<article class="blog_item">';
-                                echo '<div class="blog_item_img">';
-                                echo '<img class="card-img rounded-0" src="' . $article['urlToImage'] . '" alt="">';
-                                echo '<a href="#" class="blog_item_date">';
-                                echo '<h3>' . date('d', strtotime($article['publishedAt'])) . '</h3>';
-                                echo '<p>' . date('M', strtotime($article['publishedAt'])) . '</p>';
-                                echo '</a>';
-                                echo '</div>';
-                                echo '<div class="blog_details">';
-                                echo '<a class="d-inline-block" href="' . $article['url'] . '">';
-                                echo '<h2>' . $article['title'] . '</h2>';
-                                echo '</a>';
-                                echo '<p>' . $article['description'] . '</p>';
-                                echo '<ul class="blog-info-link">';
-                                echo '<li><a href="#"><i class="far fa-user"></i> ' . $article['author'] . '</a></li>';
-                                echo '<li><a href="' . $article['url'] . '"><i class="far fa-link"></i> ' . $article['source']['name'] . '</a></li>';
-                                echo '</ul>';
-                                echo '</div>';
-                                echo '</article>';
+                                // Display the articles
+                                foreach ($articles as $article) {
+                                        echo '<article class="blog_item">';
+                                        echo '<div class="blog_item_img">';
+                                        echo '<img class="card-img rounded-0" src="' . $article['image'] . '" alt="">';
+                                        echo '<a href="#" class="blog_item_date">';
+                                        echo '<h3>' . date('d', strtotime($article['publishedAt'])) . '</h3>';
+                                        echo '<p>' . date('M', strtotime($article['publishedAt'])) . '</p>';
+                                        echo '</a>';
+                                        echo '</div>';
+                                        echo '<div class="blog_details">';
+                                        echo '<a class="d-inline-block" href="' . $article['url'] . '">';
+                                        echo '<h2>' . $article['title'] . '</h2>';
+                                        echo '</a>';
+                                        echo '<p>' . $article['description'] . '</p>';
+                                        echo '<ul class="blog-info-link">';
+                                        echo '<li><a href="#"><i class="far fa-user"></i> ' . $article['source']['name'] . '</a></li>';
+                                        echo '<li><a href="' . $article['url'] . '"><i class="far fa-link"></i>Visit Source</a></li>';
+                                        echo '</ul>';
+                                        echo '</div>';
+                                        echo '</article>';
+                                }
+                            } else {
+                                echo 'No articles found.';
                             }
                         } else {
-                            echo 'No news articles found.';
+                            echo 'Failed to retrieve data from the API.';
                         }
                         ?>
                         <nav class="blog-pagination justify-content-center d-flex">

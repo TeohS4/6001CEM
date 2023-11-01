@@ -1,30 +1,70 @@
+<?php
+include '../../../connect.php';
+
+// Get total user count
+$totalUsers = 0;
+$userCountQuery = "SELECT COUNT(*) AS totalUsers FROM user";
+$userCountResult = mysqli_query($db, $userCountQuery);
+$userCountRow = mysqli_fetch_assoc($userCountResult);
+$totalUsers = $userCountRow['totalUsers'];
+
+// Get total order count
+$totalOrders = 0;
+$orderCountQuery = "SELECT COUNT(*) AS totalOrders FROM orders";
+$orderCountResult = mysqli_query($db, $orderCountQuery);
+$orderCountRow = mysqli_fetch_assoc($orderCountResult);
+$totalOrders = $orderCountRow['totalOrders'];
+
+// Get total revenue
+$totalRevenue = 0;
+$totalRevenueQuery = "SELECT SUM(amount) AS totalRevenue FROM orders";
+$totalRevenueResult = mysqli_query($db, $totalRevenueQuery);
+$totalRevenueRow = mysqli_fetch_assoc($totalRevenueResult);
+$totalRevenue = $totalRevenueRow['totalRevenue'];
+
+$query = "SELECT MONTH(order_date) AS month, SUM(amount) AS total_sales
+          FROM orders
+          WHERE YEAR(order_date) = YEAR(CURDATE())
+          GROUP BY MONTH(order_date)
+          ORDER BY MONTH(order_date)";
+
+$result = mysqli_query($db, $query);
+
+// Fetch the data into an array
+$data = array();
+while ($row = mysqli_fetch_assoc($result)) {
+    $data[] = array($row['month'], (int)$row['total_sales']);
+}
+?>
+
 <!DOCTYPE html>
 <html dir="ltr" lang="en">
 
 <head>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <!-- Tell the browser to be responsive to screen width -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="keywords"
-        content="wrappixel, admin dashboard, html css dashboard, web dashboard, bootstrap 5 admin, bootstrap 5, css3 dashboard, bootstrap 5 dashboard, Nice lite admin bootstrap 5 dashboard, frontend, responsive bootstrap 5 admin template, Nice admin lite design, Nice admin lite dashboard bootstrap 5 dashboard template">
-    <meta name="description"
-        content="Nice Admin Lite is powerful and clean admin dashboard template, inpired from Bootstrap Framework">
     <meta name="robots" content="noindex,nofollow">
-    <title>Nice Admin Lite Template by WrapPixel</title>
+    <title>Dashboard</title>
     <link rel="canonical" href="https://www.wrappixel.com/templates/niceadmin-lite/" />
     <!-- Favicon icon -->
-    <link rel="icon" type="image/png" sizes="16x16" href="../../assets/images/favicon.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="../../../pictures/admin logo.png">
     <!-- Custom CSS -->
     <link href="../../assets/libs/chartist/dist/chartist.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="../../dist/css/style.min.css" rel="stylesheet">
-    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
-    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-    <!--[if lt IE 9]>
-    <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-    <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
-<![endif]-->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <style>
+        .custom-rounded {
+            border-radius: 20px;
+
+        }
+    </style>
 </head>
 
 <body>
@@ -38,9 +78,8 @@
         </div>
     </div>
     <!-- Main wrapper -->
-    <div id="main-wrapper" data-navbarbg="skin6" data-theme="light" data-layout="vertical" data-sidebartype="full"
-        data-boxed-layout="full">
-        <?php 
+    <div id="main-wrapper" data-navbarbg="skin6" data-theme="light" data-layout="vertical" data-sidebartype="full" data-boxed-layout="full">
+        <?php
         include 'header.php';
         ?>
         <!-- Page wrapper  -->
@@ -65,52 +104,96 @@
                     </div>
                 </div>
             </div>
-            <!-- ============================================================== -->
-            <!-- End Bread crumb and right sidebar toggle -->
-            <!-- ============================================================== -->
-            <!-- ============================================================== -->
             <!-- Container fluid  -->
-            <!-- ============================================================== -->
             <div class="container-fluid">
-                <!-- ============================================================== -->
-                <!-- Email campaign chart -->
-                <!-- ============================================================== -->
                 <div class="row">
-                    <div class="col-lg-8">
-                        <div class="card">
+                    <div class="col-lg-9">
+                        <div class="card shadow custom-rounded">
                             <div class="card-body">
-                                <h4 class="card-title">Sales Ratio</h4>
-                                <div class="sales ct-charts mt-3"></div>
+                                <h4 class="card-title">Monthly Sales</h4>
+                                <!-- Add a div to hold the chart -->
+                                <div id="salesChart" style="width: 100%; height: 300px;"></div>
+
+                                <script type="text/javascript">
+                                    google.charts.load('current', {
+                                        'packages': ['corechart']
+                                    });
+                                    google.charts.setOnLoadCallback(drawChart);
+
+                                    function drawChart() {
+                                        // Create an array to hold the sales data for each month
+                                        var salesData = [
+                                            ['Month', 'Sales'],
+                                            <?php
+                                            // Create an array to store the sales data
+                                            $salesArray = array(
+                                                'January' => 0,
+                                                'February' => 0,
+                                                'March' => 0,
+                                                'April' => 0,
+                                                'May' => 0,
+                                                'June' => 0,
+                                                'July' => 0,
+                                                'August' => 0,
+                                                'September' => 0,
+                                                'October' => 0,
+                                                'November' => 0,
+                                                'December' => 0
+                                            );
+
+                                            // Populate the sales data from your database
+                                            foreach ($data as $row) {
+                                                $month = date("F", mktime(0, 0, 0, $row[0], 1));
+                                                $salesArray[$month] = $row[1];
+                                            }
+
+                                            // Generate the data points for each month
+                                            foreach ($salesArray as $month => $sales) {
+                                                echo "['$month', $sales],";
+                                            }
+                                            ?>
+                                        ];
+
+                                        var data = google.visualization.arrayToDataTable(salesData);
+
+                                        var options = {
+                                            title: 'Amount (RM)',
+                                            curveType: 'function',
+                                            legend: {
+                                                position: 'bottom'
+                                            },
+                                        };
+
+                                        var chart = new google.visualization.LineChart(document.getElementById('salesChart'));
+
+                                        chart.draw(data, options);
+
+                                    }
+                                </script>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4">
-                        <div class="card">
+                    <div class="col-lg-2">
+                        <div class="card shadow custom-rounded">
                             <div class="card-body">
-                                <h5 class="card-title mb-1">Referral Earnings</h5>
-                                <h3 class="font-light">$769.08</h3>
-                                <div class="mt-3 text-center">
-                                    <div id="earnings"></div>
-                                </div>
+                                <h5 class="card-title mb-1">Total Revenue</h5>
+                                <h3><?php echo 'RM ' . $totalRevenue; ?></h3>
                             </div>
                         </div>
-                        <div class="card">
+
+                        <div class="card shadow custom-rounded">
                             <div class="card-body">
-                                <h4 class="card-title mb-0">Users</h4>
-                                <h2 class="font-light">35,658 <span class="font-16 text-success font-medium">+23%</span>
+                                <h4 class="card-title mb-0">Total Users</h4>
+                                <h2><?php echo $totalUsers; ?>
                                 </h2>
-                                <div class="mt-4">
-                                    <div class="row text-center">
-                                        <div class="col-6 border-right">
-                                            <h4 class="mb-0">58%</h4>
-                                            <span class="font-14 text-muted">New Users</span>
-                                        </div>
-                                        <div class="col-6">
-                                            <h4 class="mb-0">42%</h4>
-                                            <span class="font-14 text-muted">Repeat Users</span>
-                                        </div>
-                                    </div>
-                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card shadow custom-rounded">
+                            <div class="card-body">
+                                <h4 class="card-title mb-0">Total Orders</h4>
+                                <h2><?php echo $totalOrders; ?>
+                                </h2>
                             </div>
                         </div>
                     </div>
@@ -124,7 +207,7 @@
                 <div class="row">
                     <!-- column -->
                     <div class="col-12">
-                        <div class="card">
+                        <div class="card shadow custom-rounded">
                             <div class="card-body">
                                 <h4 class="card-title">Latest Sales</h4>
                             </div>
@@ -196,7 +279,7 @@
                 <div class="row">
                     <!-- column -->
                     <div class="col-lg-6">
-                        <div class="card">
+                        <div class="card shadow custom-rounded">
                             <div class="card-body">
                                 <h4 class="card-title">Recent Comments</h4>
                             </div>
@@ -204,8 +287,7 @@
                                 <!-- Comment Row -->
                                 <div class="d-flex flex-row comment-row mt-0">
                                     <div class="p-2">
-                                        <img src="../../assets/images/users/1.jpg" alt="user" width="50"
-                                            class="rounded-circle">
+                                        <img src="../../assets/images/users/1.jpg" alt="user" width="50" class="rounded-circle">
                                     </div>
                                     <div class="comment-text w-100">
                                         <h6 class="font-medium">James Anderson</h6>
@@ -231,8 +313,7 @@
                                 <!-- Comment Row -->
                                 <div class="d-flex flex-row comment-row">
                                     <div class="p-2">
-                                        <img src="../../assets/images/users/4.jpg" alt="user" width="50"
-                                            class="rounded-circle">
+                                        <img src="../../assets/images/users/4.jpg" alt="user" width="50" class="rounded-circle">
                                     </div>
                                     <div class="comment-text active w-100">
                                         <h6 class="font-medium">Michael Jorden</h6>
@@ -258,8 +339,7 @@
                                 <!-- Comment Row -->
                                 <div class="d-flex flex-row comment-row">
                                     <div class="p-2">
-                                        <img src="../../assets/images/users/5.jpg" alt="user" width="50"
-                                            class="rounded-circle">
+                                        <img src="../../assets/images/users/5.jpg" alt="user" width="50" class="rounded-circle">
                                     </div>
                                     <div class="comment-text w-100">
                                         <h6 class="font-medium">Johnathan Doeting</h6>
@@ -285,8 +365,7 @@
                                 <!-- Comment Row -->
                                 <div class="d-flex flex-row comment-row mt-0">
                                     <div class="p-2">
-                                        <img src="../../assets/images/users/2.jpg" alt="user" width="50"
-                                            class="rounded-circle">
+                                        <img src="../../assets/images/users/2.jpg" alt="user" width="50" class="rounded-circle">
                                     </div>
                                     <div class="comment-text w-100">
                                         <h6 class="font-medium">Steve Jobs</h6>
@@ -314,12 +393,13 @@
                     </div>
                     <!-- column -->
                     <div class="col-lg-6">
-                        <div class="card">
+                        <div class="card shadow custom-rounded">
                             <div class="card-body">
                                 <h4 class="card-title">Temp Guide</h4>
                                 <div class="d-flex align-items-center flex-row mt-4">
                                     <div class="display-5 text-info"><i class="wi wi-day-showers"></i>
-                                        <span>73<sup>°</sup></span></div>
+                                        <span>73<sup>°</sup></span>
+                                    </div>
                                     <div class="ms-2">
                                         <h3 class="mb-0">Saturday</h3><small>Ahmedabad, India</small>
                                     </div>

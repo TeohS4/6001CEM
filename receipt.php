@@ -2,42 +2,6 @@
 include 'connect.php';
 session_start();
 
-if (isset($_GET['order_id'])) {
-    $order_id = $_GET['order_id'];
-
-    // Query to retrieve order details
-    $order_query = "SELECT * FROM orders WHERE order_id = $order_id";
-
-    $result = mysqli_query($db, $order_query);
-
-    if ($result && mysqli_num_rows($result) > 0) {
-        $order_data = mysqli_fetch_assoc($result);
-        $user_id = $order_data['user_id'];
-
-        // Query to retrieve name from user table
-        $user_query = "SELECT username FROM user WHERE user_id = $user_id";
-
-        $user_result = mysqli_query($db, $user_query);
-
-        if ($user_result && mysqli_num_rows($user_result) > 0) {
-            $user_data = mysqli_fetch_assoc($user_result);
-            $customer_name = $user_data['username'];
-            $order_date = $order_data['order_date'];
-            $total_price = $order_data['amount'];
-            $payment_method = $order_data['payment_method'];
-            $packaging_options = $order_data['packaging_options'];
-        } else {
-            // Handle if user not found
-            echo "User not found.";
-        }
-    } else {
-        // Handle if order not found
-        echo "Order not found.";
-    }
-} else {
-    // Handle the case if order id is missing in URL
-    echo "Order ID is missing.";
-}
 ?>
 <!doctype html>
 <html lang="en">
@@ -123,7 +87,7 @@ if (isset($_GET['order_id'])) {
 
 <body>
     <?php include 'header.php'; ?>
-    
+
     <!-- Order Success Message -->
     <div class="modal fade" id="paymentModal" role="dialog">
         <div class="modal-dialog">
@@ -160,51 +124,88 @@ if (isset($_GET['order_id'])) {
     </section>
     <!-- breadcrumb start-->
 
-    <section class="food_menu gray_bg">
-        <div class="container">
-            <div class="receipt">
-                <h1>Order Receipt</h1>
-                <p>Thank you for your shopping at EcoPack!</p>
+    <?php
+    if (isset($_GET['order_id'])) {
+        // Get order_id from the URL
+        $order_id = $_GET['order_id'];
 
-                <div class="info">
-                    <p><strong>Name:</strong> <?php echo $customer_name; ?></p>
-                    <p><strong>Date Purchased:</strong> <?php echo $order_date; ?></p>
-                    <p><strong>Order Number:</strong> <?php echo $order_id; ?></p>
+        // Get all the order data from orders table
+        $orderSQL = "SELECT * FROM orders WHERE order_id = $order_id";
+        $orderResult = mysqli_query($db, $orderSQL);
+
+        if ($orderResult && mysqli_num_rows($orderResult) > 0) {
+            // Fetch order details
+            $orderData = mysqli_fetch_assoc($orderResult);
+
+            // Fetch the 'username' from the 'user' table based on 'user_id'
+            $user_id = $orderData['user_id'];
+            $userSQL = "SELECT username FROM user WHERE user_id = $user_id";
+            $userResult = mysqli_query($db, $userSQL);
+            $userData = mysqli_fetch_assoc($userResult);
+            $customer_name = $userData['username']; // Fetch 'username' from the 'user' table
+
+            $order_date = $orderData['order_date'];
+            $total_price = $orderData['amount'];
+            $payment_method = $orderData['payment_method'];
+            $packaging_options = $orderData['packaging_options'];
+
+            // Fetch products ordered (including quantity)
+            $productSQL = "SELECT products.product_name, order_items.qty
+                           FROM order_items
+                           INNER JOIN products ON order_items.product_id = products.product_id
+                           WHERE order_items.orders_id = $order_id";
+            $productResult = mysqli_query($db, $productSQL);
+
+            $productData = array();
+            while ($product = mysqli_fetch_assoc($productResult)) {
+                $productData[] = $product['product_name'] . ' (Qty: ' . $product['qty'] . ')';
+            }
+
+            // Output the order receipt
+    ?>
+            <!-- Your HTML code for the receipt -->
+            <section class="food_menu gray_bg">
+                <!-- Your receipt HTML code goes here -->
+                <div class="container">
+                    <div class="receipt">
+                        <h1>Order Receipt</h1>
+                        <p>Thank you for your shopping at EcoPack!</p>
+
+                        <div class="info">
+                            <p><strong>Name:</strong> <?php echo $customer_name; ?></p>
+                            <p><strong>Date Purchased:</strong> <?php echo $order_date; ?></p>
+                            <p><strong>Order Number:</strong> <?php echo $order_id; ?></p>
+                        </div>
+                        <hr>
+                        <p><strong>Products Ordered:</strong></p>
+                        <ul>
+                            <?php
+                            foreach ($productData as $product) {
+                                echo "<li>$product</li>";
+                            }
+                            ?>
+                        </ul>
+
+                        <p><strong>Total Price: RM</strong> <?php echo $total_price; ?></p>
+                        <p><strong>Payment Method:</strong> <?php echo $payment_method; ?></p>
+                        <p><strong>Packaging Type:</strong> <?php echo $packaging_options; ?></p>
+                        <p>For any inquiries, contact our <a href='contact.php'>customer support</a>.</p>
+                        <br>
+                        <button class="btn btn-primary" onclick="window.print();">Print Receipt</button>
+                    </div>
                 </div>
-                <hr>
-                <?php
-                // Fetch the list of items ordered based on the order_id
-                $items_query = "SELECT order_items FROM orders WHERE order_id = $order_id";
-                $items_result = mysqli_query($db, $items_query);
+            </section>
+            <!-- Your HTML code for the receipt ends here -->
+    <?php
+        } else {
+            echo "Order not found.";
+        }
+    } else {
+        echo "Order ID not provided.";
+    }
+    ?>
 
-                if ($items_result && mysqli_num_rows($items_result) > 0) {
-                    $order_data = mysqli_fetch_assoc($items_result);
-                    $order_items = $order_data['order_items'];
-
-                    echo '<p><strong>Items Ordered:</strong></p>';
-
-                    // Parse the JSON array
-                    $order_items = json_decode($order_items);
-
-                    echo '<ul>';
-                    foreach ($order_items as $item) {
-                        $formatted_item = str_replace(['"', '[', ']'], '', $item);
-                        echo "<li>$formatted_item</li>";
-                    }
-                    echo '</ul>';
-                }
-                ?>
-                <p><strong>Total Price:</strong> <?php echo $total_price; ?></p>
-                <p><strong>Payment Method:</strong> <?php echo $payment_method; ?></p>
-                <p><strong>Packaging Type:</strong> <?php echo $packaging_options; ?></p>
-                <p>For any inquiries, contact our <a href='contact.php'>customer support</a>.</p>
-                <br>
-                <button class="btn btn-primary" onclick="window.print();">Print Receipt</button>
-            </div>
-        </div>
-    </section>
-
-    <?php 
+    <?php
     include 'footer.html';
     ?>
 

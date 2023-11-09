@@ -1,8 +1,22 @@
 <?php
+session_start();
 include 'connect.php';
 
 $product_id = $_GET['product_id'];
+$user_id = null; // Initialize the variable to null
+
+// Check if the user is logged in (adjust the condition as needed)
+if (isset($_SESSION['user_id'])) {
+   $user_id = $_SESSION['user_id'];
+   // Now $user_id contains the user's ID
+} else {
+   // Handle the case when the user is not logged in
+}
+
+
+
 $sql = "SELECT * FROM products WHERE product_id = $product_id";
+
 $result = mysqli_query($db, $sql);
 
 if ($result) {
@@ -13,7 +27,7 @@ if ($result) {
    $product_name = $row['product_name'];
    $image = $row['product_image'];
    $category = $row['category'];
-   $reviews = $row['reviews'];
+   //$reviews = $row['reviews'];
    $description = $row['product_des'];
    $price = $row['product_price'];
    $stock = $row['stock'];
@@ -23,7 +37,52 @@ if ($result) {
 } else {
    echo "Error: " . mysqli_error($db);
 }
-mysqli_close($db);
+
+
+$message = '';
+$hasReviewed = false;
+
+if (isset($_POST['submit_review'])) {
+   // Check if the user has already reviewed the product
+   $sqlCheckReviewed = "SELECT * FROM reviews WHERE product_id = '$product_id' AND user_id = '$user_id'";
+   $resultCheckReviewed = $db->query($sqlCheckReviewed);
+
+   if ($resultCheckReviewed->num_rows > 0) {
+      // User has already reviewed the product
+      $hasReviewed = true;
+      $message = '<div class="alert alert-warning">You have already reviewed this product.</div>';
+   } else {
+      // Get the user's rating and comment
+      $rating = $_POST['rating'];
+      $comment = $_POST['comment'];
+
+      if (empty($comment) || empty($rating)) {
+         $message = '<div class="alert alert-info alert-dismissible fade show" role="alert">Please enter a comment and select a star rating.
+         <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                  </button>
+                  </div>';
+      } else {
+         // Get the current date and time
+         $date = date('Y-m-d H:i:s');
+
+         // Insert the review into the database
+         $sql = "INSERT INTO reviews (product_id, user_id, rating, comment, date) VALUES ('$product_id', '$user_id', '$rating', '$comment', '$date')";
+
+         if ($db->query($sql) === TRUE) {
+            $message = '<div class="alert alert-success alert-dismissible fade show" role="alert">Review posted!
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                  </button>
+                  </div>';
+         } else {
+            $message = '<div class="alert alert-warning">Error: ' . $sql . '<br>' . $db->error . '</div>';
+         }
+      }
+   }
+   mysqli_close($db);
+}
+
 ?>
 
 <!doctype html>
@@ -57,6 +116,11 @@ mysqli_close($db);
    <!-- style CSS -->
    <link rel="stylesheet" href="css/style.css">
    <style>
+      .rounded-image {
+         border-radius: 20px;
+         box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      }
+
       .centered-box {
          display: flex;
          justify-content: center;
@@ -73,6 +137,47 @@ mysqli_close($db);
 
       .rounded-box ul li {
          font-size: 18px;
+      }
+
+      /* comment section */
+      .comment-card {
+         background-color: white;
+         border: 1px solid #c7c7c7;
+         border-radius: 10px;
+         margin-bottom: 10px;
+         padding: 20px;
+      }
+
+      .comment-card .thumb {
+         max-width: 50px;
+      }
+
+      .comment-card .comment {
+         font-family: Arial, sans-serif;
+         margin: 0;
+         padding: 10px 0;
+         font-size: 20px;
+      }
+
+      .comment-card .user-info {
+         margin-right: 20px;
+      }
+
+      .comment-card .user-info h5 {
+         font-family: Arial, sans-serif;
+         font-weight: bold;
+         margin: 0;
+      }
+
+      .comment-card .date {
+         font-family: Arial, sans-serif;
+         color: #777;
+         margin: 0;
+      }
+
+      .comment-card .rating {
+         font-size: 18px;
+         color: #ffac33;
       }
    </style>
 </head>
@@ -102,7 +207,7 @@ mysqli_close($db);
             <div class="col-lg-8 posts-list">
                <div class="single-post">
                   <div class="feature-img">
-                     <img class="img-fluid" src="uploads/<?php echo $image; ?>" alt="<?php echo $product_name; ?>">
+                     <img class="img-fluid rounded-image" src="uploads/<?php echo $image; ?>" alt="<?php echo $product_name; ?>">
                   </div>
                   <div class="blog_details">
                      <h2><?php echo $product_name; ?>
@@ -113,78 +218,48 @@ mysqli_close($db);
                            <ul class="blog-info-link mt-3 mb-4">
                               <li><i class="fa-solid fa-circle-info"></i> <?php echo $category; ?></li>
                               <li><i class="fa-solid fa-money-bill-wave"></i> RM <?php echo number_format($price, 2); ?></li>
-                              <li><i class="fa-solid fa-box"></i> <?php echo $stock; ?> items left</li>
+                              <li>
+                                 <?php if ($stock < 10) : ?>
+                                    <span style="color: red; font-size: 18px;">
+                                       <i class="fa-solid fa-box"></i> <?php echo $stock; ?> items left (Low Stock)
+                                    </span>
+                                 <?php else : ?>
+                                    <i class="fa-solid fa-box"></i> <?php echo $stock; ?> items left
+                                 <?php endif; ?>
+                              </li>
+
                            </ul>
                         </div>
                      </div>
-
-                     <p class="excert">
+                     <br>
                      <h4><b>Product Description:</b></h4>
-                     <?php echo $description; ?>
-                     </p>
-                     <div class="quote-wrapper">
-                        <div class="quotes">
-                           This product is environmental friendly and it is an effort to reduce the plastic waste around the world
-                        </div>
-                     </div>
+                     <?php echo "<p style='font-size: 18px;'>$description </p>"; ?>
+                     <br>
+                     <?php
+                     echo '<form action="add_cart.php" method="POST">';
+                     echo '<input type="hidden" name="product_image" value="' . $image . '">';
+                     echo '<input type="hidden" name="product_name" value="' . $product_name . '">';
+                     echo '<input type="hidden" name="product_price" value="' . $price . '">';
+                     echo '<input type="hidden" name="product_id" value="' . $product_id . '">';
+                     echo '<button type="submit" class="btn_4" style="border: none;">';
+                     echo '<i class="fa-solid fa-cart-shopping"></i> Add To Cart</button>';
+                     echo '</form>';
+                     ?>
+                     <br>
                   </div>
                </div>
                <div class="navigation-top">
                   <div class="d-sm-flex justify-content-between text-center">
-                     <p class="like-info"><span class="align-middle"><i class="far fa-heart"></i></span> Lily and 4
-                        people like this</p>
                      <div class="col-sm-4 text-center my-2 my-sm-0">
                         <!-- <p class="comment-count"><span class="align-middle"><i class="far fa-comment"></i></span> 06 Comments</p> -->
                      </div>
                      <ul class="social-icons">
                         <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
                         <li><a href="#"><i class="fab fa-twitter"></i></a></li>
-                        <li><a href="#"><i class="fab fa-dribbble"></i></a></li>
-                        <li><a href="#"><i class="fab fa-behance"></i></a></li>
                      </ul>
                   </div>
-                  <div class="navigation-area">
-                     <div class="row">
-                        <div class="col-lg-6 col-md-6 col-12 nav-left flex-row d-flex justify-content-start align-items-center">
-                           <div class="thumb">
-                              <a href="#">
-                                 <img class="img-fluid" src="img/post/preview.png" alt="">
-                              </a>
-                           </div>
-                           <div class="arrow">
-                              <a href="#">
-                                 <span class="lnr text-white ti-arrow-left"></span>
-                              </a>
-                           </div>
-                           <div class="detials">
-                              <p>Prev Post</p>
-                              <a href="#">
-                                 <h4>Space The Final Frontier</h4>
-                              </a>
-                           </div>
-                        </div>
-                        <div class="col-lg-6 col-md-6 col-12 nav-right flex-row d-flex justify-content-end align-items-center">
-                           <div class="detials">
-                              <p>Next Post</p>
-                              <a href="#">
-                                 <h4>Telescopes 101</h4>
-                              </a>
-                           </div>
-                           <div class="arrow">
-                              <a href="#">
-                                 <span class="lnr text-white ti-arrow-right"></span>
-                              </a>
-                           </div>
-                           <div class="thumb">
-                              <a href="#">
-                                 <img class="img-fluid" src="img/post/next.png" alt="">
-                              </a>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
                </div>
-               <div class="blog-author">
+               <!-- <div class="blog-author">
                   <div class="media align-items-center">
                      <img src="img/blog/author.png" alt="">
                      <div class="media-body">
@@ -195,238 +270,164 @@ mysqli_close($db);
                            our dominion twon Second divided from</p>
                      </div>
                   </div>
-               </div>
+               </div> -->
+
                <!-- Comment Section -->
-               <div class="comments-area">
-                  <h4>NUMBER OF REVIEWS FOR THIS PRODUCT</h4>
-                  <div class="comment-list">
-                     <div class="single-comment justify-content-between d-flex">
-                        <div class="user justify-content-between d-flex">
-                           <div class="thumb">
-                              <img src="img/comment/comment_1.png" alt="">
-                           </div>
-                           <div class="desc">
-                              <p class="comment">
-                                 Comment HERE
-                              </p>
-                              <div class="d-flex justify-content-between">
-                                 <div class="d-flex align-items-center">
-                                    <h5>
-                                       <a href="#">USERNAME HERE</a>
-                                    </h5>
-                                    <p class="date">Date and Time HERE </p>
+               <h3>User Reviews:</h3>
+               <?php
+               // Get average ratings
+               $sql = "SELECT r.*, u.username FROM reviews r
+                        LEFT JOIN user u ON r.user_id = u.user_id
+                        WHERE r.product_id = $product_id";
+               $result = $db->query($sql);
+
+               $totalRatings = 0;
+               $averageRating = 0;
+
+               if ($result->num_rows > 0) {
+                  while ($row = $result->fetch_assoc()) {
+                     $rating = $row['rating'];
+                     $ratingValue = (int)filter_var($rating, FILTER_SANITIZE_NUMBER_INT);
+                     $totalRatings += $ratingValue;
+                  }
+                  $averageRating = $totalRatings / $result->num_rows;
+
+                  $averageStars = '';
+                  for ($i = 1; $i <= 5; $i++) {
+                     if ($i <= round($averageRating)) {
+                        $averageStars .= '<i class="fas fa-star"></i>'; // Full star for average rating
+                     } else {
+                        $averageStars .= '<i class="far fa-star"></i>'; // Empty star for remaining
+                     }
+                  }
+                  // Display the average rating with stars
+                  echo '<p>Average Rating: ' . $averageStars . ' (' . number_format($averageRating, 2) . ' stars)</p>';
+               }
+
+               ?>
+               <br>
+               <?php
+               $sql = "SELECT r.*, u.username FROM reviews r
+               LEFT JOIN user u ON r.user_id = u.user_id
+               WHERE r.product_id = $product_id";
+               $result = $db->query($sql);
+
+               if ($result->num_rows > 0) {
+                  while ($row = $result->fetch_assoc()) {
+                     $rating = $row['rating']; // Get the textual rating (e.g., '5 stars', '4 stars')
+                     $comment = $row['comment'];
+                     $username = $row['username']; // Get the username from the user table
+                     $date = $row['date'];
+
+                     // Convert the textual rating to star icons
+                     $stars = '';
+                     $ratingValue = (int)filter_var($rating, FILTER_SANITIZE_NUMBER_INT);
+                     for ($i = 1; $i <= 5; $i++) {
+                        if ($i <= $ratingValue) {
+                           $stars .= '<i class="fas fa-star"></i>';
+                        } else {
+                           $stars .= '<i class="far fa-star"></i>';
+                        }
+                     }
+
+                     // Output the review with star rating
+                     echo '<div class="comment-card">
+                           <div class="single-comment justify-content-between d-flex">
+                              <div class="user justify-content-between d-flex">
+                                 <div class="thumb">
+                                    <i class="fa fa-user"></i>
                                  </div>
-                                 <!-- <div class="reply-btn">
+                                 <div class="desc ml-3">
+                                 <h4 style="font-family: Arial; color: blue;">
+                                    <a href="">' . $username . '</a>
+                                 </h4>
+                                       <div class="rating">' . $stars . '</div>
+                                       <div class="d-flex justify-content-between align-items-center">
+                                          <div class="user-info">
+                                          <p class="comment">' . $comment . '</p>
+                                             <p class="date">' . $date . '</p>
+                                          </div> 
+                                       </div>
+                                    </div>
+                                 </div>
+                              </div>
+                           </div>';
+                  }
+               } else {
+                  echo 'There are no reviews about this product.';
+               }
+               ?>
+               <!-- <div class="reply-btn">
                                     <a href="#" class="btn-reply text-uppercase">reply</a>
                                  </div> -->
-                              </div>
-                           </div>
-                        </div>
-                     </div>
-                  </div>
-               </div>
                <!-- End Comment Section -->
                <!-- Comment Form -->
                <div class="comment-form">
-                  <h4>Leave a Review</h4>
-                  <form class="form-contact comment_form" action="#" id="commentForm">
+
+                  <?php echo $message; ?>
+
+                  <?php
+                  if (isset($_SESSION['user_id'])) {
+                     $user_id = $_SESSION['user_id'];
+                     echo '
+                        <h4>Leave a Review</h4>
+                  <form class="form-contact comment_form" method="POST" action="" id="commentForm">
                      <div class="row">
                         <div class="col-12">
                            <div class="form-group">
                               <textarea class="form-control w-100" name="comment" id="comment" cols="30" rows="9" placeholder="Write Comment"></textarea>
                            </div>
                         </div>
-                        <div class="col-sm-6">
-                           <div class="form-group">
-                              <input class="form-control" name="name" id="name" type="text" placeholder="Name">
-                           </div>
-                        </div>
-                        <div class="col-sm-6">
-                           <div class="form-group">
-                              <input class="form-control" name="email" id="email" type="email" placeholder="Email">
-                           </div>
-                        </div>
                         <div class="col-12">
                            <div class="form-group">
-                              <input class="form-control" name="review" id="review" type="text" placeholder="Comments">
+                              <label for="rating">Rate:</label><br>
+                              <div id="star-rating" name="rating"></div>
+                              <div id="rating-hint"></div>
+
                            </div>
                         </div>
                      </div>
-                     <div class="form-group">
-                        <button type="submit_review" class="button button-contactForm">Send Message</button>
-                     </div>
+                        <div class="form-group">
+                        <button type="submit" name="submit_review" class="button button-contactForm">Post Review</button>
+                        </div>';
+                  } else {
+                     echo '<div class="alert alert-warning">
+                              <h4 class="m-3"><i class="fa-solid fa-triangle-exclamation"></i> You must be logged in to post reviews</h4>
+                           </div>';
+                  }
+                  ?>
                   </form>
                </div>
                <!-- END COMMENT FORM -->
             </div>
             <div class="col-lg-4">
                <div class="blog_right_sidebar">
-                  <aside class="single_sidebar_widget search_widget">
-                     <form action="#">
-                        <div class="form-group">
-                           <div class="input-group mb-3">
-                              <input type="text" class="form-control" placeholder='Search Keyword' onfocus="this.placeholder = ''" onblur="this.placeholder = 'Search Keyword'">
-                              <div class="input-group-append">
-                                 <button class="btn" type="button"><i class="ti-search"></i></button>
-                              </div>
-                           </div>
-                        </div>
-                        <button class="button rounded-0 primary-bg text-white w-100 btn_4" type="submit">Search</button>
-                     </form>
-                  </aside>
                   <aside class="single_sidebar_widget post_category_widget">
-                     <h4 class="widget_title">Category</h4>
+                     <h4 class="widget_title">Browse Category</h4>
                      <ul class="list cat-list">
                         <li>
-                           <a href="#" class="d-flex">
-                              <p>Resaurant food</p>
-                              <p>(37)</p>
+                           <a href="http://localhost/ecopack/products.php?category=Cutlery+%26+Cups" class="d-flex">
+                              <p>Cutlery & Cups</p>
                            </a>
                         </li>
                         <li>
-                           <a href="#" class="d-flex">
-                              <p>Travel news</p>
-                              <p>(10)</p>
+                           <a href="http://localhost/ecopack/products.php?category=Bags" class="d-flex">
+                              <p>Bags</p>
                            </a>
                         </li>
                         <li>
-                           <a href="#" class="d-flex">
-                              <p>Modern technology</p>
-                              <p>(03)</p>
+                           <a href="http://localhost/ecopack/products.php?category=Plates" class="d-flex">
+                              <p>Plates</p>
                            </a>
                         </li>
                         <li>
-                           <a href="#" class="d-flex">
-                              <p>Product</p>
-                              <p>(11)</p>
-                           </a>
-                        </li>
-                        <li>
-                           <a href="#" class="d-flex">
-                              <p>Inspiration</p>
-                              <p>(21)</p>
-                           </a>
-                        </li>
-                        <li>
-                           <a href="#" class="d-flex">
-                              <p>Health Care</p>
-                              <p>(21)</p>
+                           <a href="http://localhost/ecopack/products.php?category=Food+Containers" class="d-flex">
+                              <p>Food Containers</p>
                            </a>
                         </li>
                      </ul>
                   </aside>
-                  <aside class="single_sidebar_widget popular_post_widget">
-                     <h3 class="widget_title">Recent Post</h3>
-                     <div class="media post_item">
-                        <img src="img/post/post_1.png" alt="post">
-                        <div class="media-body">
-                           <a href="single-blog.html">
-                              <h3>From life was you fish...</h3>
-                           </a>
-                           <p>January 12, 2019</p>
-                        </div>
-                     </div>
-                     <div class="media post_item">
-                        <img src="img/post/post_2.png" alt="post">
-                        <div class="media-body">
-                           <a href="single-blog.html">
-                              <h3>The Amazing Hubble</h3>
-                           </a>
-                           <p>02 Hours ago</p>
-                        </div>
-                     </div>
-                     <div class="media post_item">
-                        <img src="img/post/post_3.png" alt="post">
-                        <div class="media-body">
-                           <a href="single-blog.html">
-                              <h3>Astronomy Or Astrology</h3>
-                           </a>
-                           <p>03 Hours ago</p>
-                        </div>
-                     </div>
-                     <div class="media post_item">
-                        <img src="img/post/post_4.png" alt="post">
-                        <div class="media-body">
-                           <a href="single-blog.html">
-                              <h3>Asteroids telescope</h3>
-                           </a>
-                           <p>01 Hours ago</p>
-                        </div>
-                     </div>
-                  </aside>
-                  <aside class="single_sidebar_widget tag_cloud_widget">
-                     <h4 class="widget_title">Tag Clouds</h4>
-                     <ul class="list">
-                        <li>
-                           <a href="#">project</a>
-                        </li>
-                        <li>
-                           <a href="#">love</a>
-                        </li>
-                        <li>
-                           <a href="#">technology</a>
-                        </li>
-                        <li>
-                           <a href="#">travel</a>
-                        </li>
-                        <li>
-                           <a href="#">restaurant</a>
-                        </li>
-                        <li>
-                           <a href="#">life style</a>
-                        </li>
-                        <li>
-                           <a href="#">design</a>
-                        </li>
-                        <li>
-                           <a href="#">illustration</a>
-                        </li>
-                     </ul>
-                  </aside>
-                  <aside class="single_sidebar_widget instagram_feeds">
-                     <h4 class="widget_title">Instagram Feeds</h4>
-                     <ul class="instagram_row flex-wrap">
-                        <li>
-                           <a href="#">
-                              <img class="img-fluid" src="img/post/post_5.png" alt="">
-                           </a>
-                        </li>
-                        <li>
-                           <a href="#">
-                              <img class="img-fluid" src="img/post/post_6.png" alt="">
-                           </a>
-                        </li>
-                        <li>
-                           <a href="#">
-                              <img class="img-fluid" src="img/post/post_7.png" alt="">
-                           </a>
-                        </li>
-                        <li>
-                           <a href="#">
-                              <img class="img-fluid" src="img/post/post_8.png" alt="">
-                           </a>
-                        </li>
-                        <li>
-                           <a href="#">
-                              <img class="img-fluid" src="img/post/post_9.png" alt="">
-                           </a>
-                        </li>
-                        <li>
-                           <a href="#">
-                              <img class="img-fluid" src="img/post/post_10.png" alt="">
-                           </a>
-                        </li>
-                     </ul>
-                  </aside>
-                  <aside class="single_sidebar_widget newsletter_widget">
-                     <h4 class="widget_title">Newsletter</h4>
-                     <form action="#">
-                        <div class="form-group">
-                           <input type="email" class="form-control" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Enter email'" placeholder='Enter email' required>
-                        </div>
-                        <button class="button rounded-0 primary-bg text-white w-100 btn_4" type="submit">Subscribe</button>
-                     </form>
-                  </aside>
+
                </div>
             </div>
          </div>
@@ -459,6 +460,22 @@ mysqli_close($db);
    <script src="js/jquery.nice-select.min.js"></script>
    <!-- custom js -->
    <script src="js/custom.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/raty/2.9.0/jquery.raty.min.js"></script>
+   <!-- Ratings -->
+   <script>
+      $(document).ready(function() {
+         $('#star-rating').raty({
+            number: 5, // Number of stars
+            scoreName: 'rating',
+            target: '#rating-hint', // Display the rating hint
+            targetText: '',
+            click: function(score, event) {},
+            starType: 'i',
+            starOn: 'fa fa-star',
+            starOff: 'fa fa-star-o'
+         });
+      });
+   </script>
 </body>
 
 </html>

@@ -6,7 +6,7 @@ session_start();
 if (!isset($_SESSION['user_id'])) {
     echo '<script>
     alert("Please login to continue");
-    window.location.href = "login/login.php"; 
+    window.location.href = "index.php"; 
     </script>';
     exit();
 }

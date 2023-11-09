@@ -42,7 +42,6 @@ if (isset($_POST['update'])) {
     }
 }
 
-
 //   Delete Profile
 if (isset($_POST['delete'])) {
     mysqli_query($db, "DELETE FROM user WHERE user_id = '$user_id'");

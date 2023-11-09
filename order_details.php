@@ -46,8 +46,6 @@ $user_id = $_SESSION['user_id'];
             /* Ensure the content fills the container width */
         }
     </style>
-
-
 </head>
 
 <body>
@@ -72,54 +70,72 @@ $user_id = $_SESSION['user_id'];
     <div class="row">
         <div class="col m-5">
             <div class="section_tittle">
-                <h2>Orders</h2>
+                <h2>Order Details</h2>
             </div>
             <?php
-            // Receive the order_id from the URL
-            $order_id = $_GET['order_id'];
+            if (isset($_GET['order_id'])) {
+                $order_id = $_GET['order_id'];
+                // Fetch order details based on the provided order_id
+                $orderDetailsSQL = "SELECT o.order_id, u.username, o.amount, o.order_date, o.status, o.payment_method
+                        FROM orders o
+                        INNER JOIN user u ON o.user_id = u.user_id
+                        WHERE o.order_id = $order_id";
 
-            $query = "SELECT o.order_id, u.username, o.order_items, o.amount, o.order_date
-            FROM orders o
-            JOIN user u ON o.user_id = u.user_id
-            WHERE o.order_id = $order_id";
+                $orderDetailsResult = mysqli_query($db, $orderDetailsSQL);
 
-            $result = mysqli_query($db, $query);
+                if ($orderDetailsResult && mysqli_num_rows($orderDetailsResult) > 0) {
+                    $orderDetails = mysqli_fetch_assoc($orderDetailsResult);
 
-            // Check if the order was found
-            if ($result && mysqli_num_rows($result) > 0) {
-                $order = mysqli_fetch_assoc($result);
+                    $order_id = $orderDetails['order_id'];
+                    $customer_name = $orderDetails['username'];
+                    $total_price = $orderDetails['amount'];
+                    $order_date = $orderDetails['order_date'];
+                    $delivery_status = $orderDetails['status'];
+                    $payment_method = $orderDetails['payment_method'];
 
-                echo '<div class="receipt-container">';
-                echo '<div class="receipt-content text-center">';
-                echo '<h4>Order Receipt</h4>';
-                echo '<hr>';
-                echo '<p><strong>Order ID:</strong> ' . $order['order_id'] . '</p>';
-                echo '<p><strong>Customer Name:</strong> ' . $order['username'] . '</p>'; // Use 'username' here
-                echo '<p><strong>Order Items:</strong><br>' . formatOrderItems($order['order_items']) . '</p>';
-                echo '<p><strong>Amount:</strong> RM ' . $order['amount'] . '</p>';
-                echo '<p><strong>Order Date:</strong> ' . $order['order_date'] . '</p>';
-                echo '</div>';
-                echo '<hr>';
-                echo '<div class="text-center">';
-                echo '<button class="btn btn-primary" onclick="window.print();">Print Receipt</button>';
-                echo '</div>';
-                echo '</div>';
-            } else {
-                echo 'Order not found.';
-            }
-            function formatOrderItems($order_items)
-            {
-                $order_items = json_decode($order_items);
-                if ($order_items !== null) {
-                    $formatted_items = [];
+                    // Fetch order items
+                    $orderItemsSQL = "SELECT p.product_name, oi.qty
+                        FROM order_items oi
+                        INNER JOIN products p ON oi.product_id = p.product_id
+                        WHERE oi.orders_id = $order_id";
 
-                    foreach ($order_items as $item) {
-                        $formatted_item = str_replace(['"', '[', ']'], '', $item);
-                        $formatted_items[] = $formatted_item;
+                    $orderItemsResult = mysqli_query($db, $orderItemsSQL);
+
+                    $orderItems = array();
+                    while ($item = mysqli_fetch_assoc($orderItemsResult)) {
+                        $orderItems[] = $item['product_name'] . " (Qty: " . $item['qty'] . ")";
                     }
-                    return implode("<br>", $formatted_items);
+
+                    // Output the order details
+                    echo '<div class="receipt-container" style="font-size: 18px;">';
+                    echo '<div class="receipt-content text-center">';
+                    echo '<h4 style="font-size: 24px;">Order Details</h4>';
+                    echo '<hr>';
+                    echo "<p><strong style='font-size: 16px;'>Order ID:</strong> $order_id</p>";
+                    echo "<p><strong style='font-size: 16px;'>Customer Name:</strong> $customer_name</p>";
+                    echo "<p><strong style='font-size: 16px;'>Order Items:</strong><br>";
+                    echo "<ul>";
+                    foreach ($orderItems as $item) {
+                        echo "<li style='font-size: 16px;'>$item</li>";
+                    }
+                    echo "</ul></p>";
+                    echo '<hr>';
+                    echo "<p><strong style='font-size: 16px;'>Amount:</strong> RM $total_price</p>";
+                    echo "<p><strong style='font-size: 16px;'>Payment Method:</strong> $payment_method</p>";
+                    echo "<p><strong style='font-size: 16px;'>Order Date:</strong> $order_date</p>";
+                    echo "<p><strong style='font-size: 16px;'>Delivery Status:</strong></p>";
+                    echo "<p class='text-success font-weight-bold' style='font-size: 16px;'>$delivery_status</p>";
+                    echo '</div>';
+                    echo '<hr>';
+                    echo '<div class="text-center">';
+                    echo '<button class="btn btn-primary" onclick="window.print();">Print</button>';
+                    echo '</div>';
+                    echo '</div>';
+                } else {
+                    echo "Order not found.";
                 }
-                return "Invalid order items";
+            } else {
+                echo "Order ID not provided.";
             }
             ?>
         </div>

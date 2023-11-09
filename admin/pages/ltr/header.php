@@ -1,3 +1,10 @@
+<?php
+session_start();
+
+if (!isset($_SESSION['admin_username'])) {
+    echo '<script>alert("Please log in as an admin to proceed"); window.location.href = "admin_login.php";</script>';
+}
+?>
 <script src="https://kit.fontawesome.com/a84d485a7a.js" crossorigin="anonymous"></script>
 <header class="topbar" data-navbarbg="skin6">
     <nav class="navbar top-navbar navbar-expand-md navbar-light">
@@ -13,7 +20,7 @@
                 <a href="dashboard.php" class="logo">
                     <!-- Logo icon -->
                     <b class="logo-icon">
-                        <img src="../../../pictures/admin logo.png" alt="homepage" class="light-logo" style="width: 30px;height:30px;"/>
+                        <img src="../../../pictures/admin logo.png" alt="homepage" class="light-logo" style="width: 30px;height:30px;" />
                     </b>
                     <!--End Logo icon -->
                     <!-- Logo text -->
@@ -28,7 +35,10 @@
         <!-- End Logo -->
         <!-- ============================================================== -->
         <div class="navbar-collapse collapse" id="navbarSupportedContent" data-navbarbg="skin6">
-            <h4 class="m-3">Welcome Admin</h4>
+            <h4 class="m-3"><?php echo 'Welcome, ' . $_SESSION['admin_username']; ?></h4>
+            <a href="logout.php" class="text-danger">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+            </a>
         </div>
     </nav>
 </header>

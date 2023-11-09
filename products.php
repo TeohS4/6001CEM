@@ -160,12 +160,12 @@ function getAllProductCount($db)
                                     <!-- end search -->
                                     <div style="margin-left: 10px;"></div>
                                     <!-- Sort -->
-                                    <button class="btn btn-secondary dropdown-toggle" type="button" id="sortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <button class="btn btn-info dropdown-toggle" type="button" id="sortDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                         Sort by Price
                                     </button>
                                     <div class="dropdown-menu" aria-labelledby="sortDropdown">
-                                        <a class="dropdown-item" href="#">Price: Low to High</a>
-                                        <a class="dropdown-item" href="#">Price: High to Low</a>
+                                        <a class="dropdown-item" href="products.php?sort=low_to_high">Price: Low to High</a>
+                                        <a class="dropdown-item" href="products.php?sort=high_to_low">Price: High to Low</a>
                                     </div>
                                     <!-- end sort -->
                                     <div style="margin-left: 10px;"></div>
@@ -204,60 +204,82 @@ function getAllProductCount($db)
 
                                 <div class="row">
                                     <?php
+                                    // Initialize the SQL query
+                                    $sql = "SELECT product_id, product_image, product_name, category, product_price FROM products";
+
+                                    // Handle search keywords
                                     if (isset($_GET['keywords'])) {
                                         $keywords = mysqli_real_escape_string($db, $_GET['keywords']);
+                                        $sql .= " WHERE product_name = '$keywords'";
+                                    }
 
-                                        if (isset($_GET['category']) && $_GET['category'] != 'All') {
-                                            $selected_category = mysqli_real_escape_string($db, $_GET['category']);
-                                            $sql = "SELECT product_id, product_image, product_name, category, product_price FROM products WHERE category = '$selected_category' AND product_name LIKE '%$keywords%'";
+                                    // Handle category filtering
+                                    if (isset($_GET['category']) && $_GET['category'] !== 'All') {
+                                        $selected_category = mysqli_real_escape_string($db, $_GET['category']);
+                                        if (strpos($sql, 'WHERE') !== false) {
+                                            $sql .= " AND category = '$selected_category'";
                                         } else {
-                                            $sql = "SELECT product_id, product_image, product_name, category, product_price FROM products WHERE product_name LIKE '%$keywords%'";
-                                        }
-                                    } else {
-                                        if (isset($_GET['category']) && $_GET['category'] != 'All') {
-                                            $selected_category = mysqli_real_escape_string($db, $_GET['category']);
-                                            $sql = "SELECT product_id, product_image, product_name, category, product_price FROM products WHERE category = '$selected_category'";
-                                        } else {
-                                            $sql = "SELECT product_id, product_image, product_name, category, product_price FROM products";
+                                            $sql .= " WHERE category = '$selected_category'";
                                         }
                                     }
 
+                                    // Handle sorting
+                                    $sort = isset($_GET['sort']) ? $_GET['sort'] : 'default';
+                                    switch ($sort) {
+                                        case 'low_to_high':
+                                            $sql .= " ORDER BY product_price ASC";
+                                            break;
+                                        case 'high_to_low':
+                                            $sql .= " ORDER BY product_price DESC";
+                                            break;
+                                        default:
+                                            // Default query without sorting
+                                            break;
+                                    }
+                                    // Execute the SQL query
                                     $result = mysqli_query($db, $sql);
 
                                     if ($result) {
-                                        while ($row = mysqli_fetch_assoc($result)) {
-                                            // Display Product
-                                            $product_id = $row['product_id'];
-                                            $product_image = $row["product_image"];
-                                            $product_name = $row["product_name"];
-                                            $product_category = $row["category"];
-                                            $product_price = $row["product_price"];
-                                            // Display Product
-                                            echo '<div class="col-sm-6 col-lg-6">';
-                                            echo '<div class="single_food_item media bg-white shadow">';
-                                            echo '<a href="product_info.php?product_id=' . $product_id . '">
-                                                <img src="uploads/' . $product_image . '" class="mr-3" alt="' . $product_image . '" width="180" height="180" style="border-radius: 20px;">
-                                                </a>';
-                                            echo '<div class="media-body align-self-center">';
-                                            echo '<a href="product_info.php?product_id=' . $product_id . '">
-                                                  <h3 class="mt-2">' . $product_name . '</h3></a>';
-                                            echo '<p>' . $product_category . '</p>';
-                                            echo '<h5>RM ' . $product_price . '</h5>';
-                                            echo '<div class="menu_btn">';
-                                            // Form button
-                                            echo '<form action="add_cart.php" method="POST">';
-                                            echo '<input type="hidden" name="product_image" value="' . $product_image . '">';
-                                            echo '<input type="hidden" name="product_name" value="' . $product_name . '">';
-                                            echo '<input type="hidden" name="product_price" value="' . $product_price . '">';
-                                            echo '<input type="hidden" name="product_id" value="' . $product_id . '">';
-                                            echo '<button type="submit" class="single_page_btn d-none d-sm-block mb-2" style="width: 160px;">';
-                                            echo '<i class="fa-solid fa-cart-shopping"></i> Add To Cart</button>';
-                                            echo '</form>';
+                                        if (mysqli_num_rows($result) > 0) {
+                                            while ($row = mysqli_fetch_assoc($result)) {
+                                                // Display Product
+                                                $product_id = $row['product_id'];
+                                                $product_image = $row['product_image'];
+                                                $product_name = $row['product_name'];
+                                                $product_category = $row['category'];
+                                                $product_price = $row['product_price'];
 
-                                            echo '</div>'; // Menu_btn div
-                                            echo '</div>'; // Media-body div
-                                            echo '</div>'; // Single_food_item div
-                                            echo '</div>'; // Column div
+                                                // Display Product
+                                                echo '<div class="col-sm-6 col-lg-6">';
+                                                echo '<div class="single_food_item media bg-white shadow">';
+                                                echo '<a href="product_info.php?product_id=' . $product_id . '">
+<img src="uploads/' . $product_image . '" class="mr-3" alt="' . $product_image . '" width="180" height="180" style="border-radius: 20px;">
+</a>';
+                                                echo '<div class="media-body align-self-center">';
+                                                echo '<a href="product_info.php?product_id=' . $product_id . '">
+<h3 class="mt-2">' . $product_name . '</h3></a>';
+                                                echo '<p>' . $product_category . '</p>';
+                                                echo '<h5>RM ' . $product_price . '</h5>';
+                                                echo '<div class="menu_btn">';
+                                                // Form button
+                                                echo '<form action="add_cart.php" method="POST">';
+                                                echo '<input type="hidden" name="product_image" value="' . $product_image . '">';
+                                                echo '<input type="hidden" name="product_name" value="' . $product_name . '">';
+                                                echo '<input type="hidden" name="product_price" value="' . $product_price . '">';
+                                                echo '<input type="hidden" name="product_id" value="' . $product_id . '">';
+                                                echo '<button type="submit" class="single_page_btn d-none d-sm-block mb-2" style="width: 160px;">';
+                                                echo '<i class="fa-solid fa-cart-shopping"></i> Add To Cart</button>';
+                                                echo '</form>';
+                                                echo '</div>'; // Menu_btn div
+                                                echo '</div>'; // Media-body div
+                                                echo '</div>'; // Single_food_item div
+                                                echo '</div>'; // Column div
+                                            }
+                                        } else {
+                                            // No products found
+                                            echo '<div class="col-12 text-center">';
+                                            echo '<h3>No product found</h3>';
+                                            echo '</div>';
                                         }
                                     } else {
                                         echo "Error: " . mysqli_error($db);
@@ -265,6 +287,7 @@ function getAllProductCount($db)
                                     // Close the database connection
                                     mysqli_close($db);
                                     ?>
+
                                 </div>
                             </div>
                         </div>
@@ -295,7 +318,7 @@ function getAllProductCount($db)
     </section>
     <!-- intro_video_bg part start-->
 
-    <?php 
+    <?php
     include 'footer.html';
     ?>
 

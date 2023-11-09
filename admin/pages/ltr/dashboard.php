@@ -22,18 +22,49 @@ $totalRevenueResult = mysqli_query($db, $totalRevenueQuery);
 $totalRevenueRow = mysqli_fetch_assoc($totalRevenueResult);
 $totalRevenue = $totalRevenueRow['totalRevenue'];
 
-$query = "SELECT MONTH(order_date) AS month, SUM(amount) AS total_sales
+// Monthly Sales
+$monthlyQuery = "SELECT MONTH(order_date) AS month, SUM(amount) AS total_sales
           FROM orders
           WHERE YEAR(order_date) = YEAR(CURDATE())
           GROUP BY MONTH(order_date)
           ORDER BY MONTH(order_date)";
 
-$result = mysqli_query($db, $query);
+$monthlyResult = mysqli_query($db, $monthlyQuery);
 
-// Fetch the data into an array
-$data = array();
-while ($row = mysqli_fetch_assoc($result)) {
-    $data[] = array($row['month'], (int)$row['total_sales']);
+// Fetch the data into a monthly data array
+$monthlyData = array();
+while ($row = mysqli_fetch_assoc($monthlyResult)) {
+    $monthlyData[] = array($row['month'], (int)$row['total_sales']);
+}
+
+// Weekly Sales
+$weeklyQuery = "SELECT DATE(order_date) AS order_date, SUM(amount) AS total_sales
+              FROM orders
+              WHERE WEEK(order_date) = WEEK(CURDATE())
+              AND YEAR(order_date) = YEAR(CURDATE())
+              GROUP BY DATE(order_date)
+              ORDER BY DATE(order_date)";
+$weeklyResult = mysqli_query($db, $weeklyQuery);
+$weeklyData = array();
+while ($row = mysqli_fetch_assoc($weeklyResult)) {
+    $weeklyData[] = array($row['order_date'], (int)$row['total_sales']);
+}
+
+// Delete Reviews
+$message = '';
+if (isset($_POST['delete'])) {
+    $review_id = $_POST['delete']; // Corrected from $_GET
+
+    $deleteQuery = "DELETE FROM reviews WHERE review_id = $review_id";
+
+    if (mysqli_query($db, $deleteQuery)) {
+        $message = '<div class="alert alert-success alert-dismissible fade show" role="alert">
+        Comment Deleted Successfully
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+    } else {
+        // Handle the error if the review deletion fails
+        $message = "Error deleting the review: " . mysqli_error($db);
+    }
 }
 ?>
 
@@ -68,15 +99,13 @@ while ($row = mysqli_fetch_assoc($result)) {
 </head>
 
 <body>
-    <!-- ============================================================== -->
     <!-- Preloader - style you can find in spinners.css -->
-    <!-- ============================================================== -->
-    <div class="preloader">
+    <!-- <div class="preloader">
         <div class="lds-ripple">
             <div class="lds-pos"></div>
             <div class="lds-pos"></div>
         </div>
-    </div>
+    </div> -->
     <!-- Main wrapper -->
     <div id="main-wrapper" data-navbarbg="skin6" data-theme="light" data-layout="vertical" data-sidebartype="full" data-boxed-layout="full">
         <?php
@@ -111,16 +140,16 @@ while ($row = mysqli_fetch_assoc($result)) {
                         <div class="card shadow custom-rounded">
                             <div class="card-body">
                                 <h4 class="card-title">Monthly Sales</h4>
-                                <!-- Add a div to hold the chart -->
-                                <div id="salesChart" style="width: 100%; height: 300px;"></div>
 
+                                <!-- Display monthly sales -->
+                                <div id="monthlySales" style="width: 100%; height: 300px;"></div>
                                 <script type="text/javascript">
                                     google.charts.load('current', {
                                         'packages': ['corechart']
                                     });
-                                    google.charts.setOnLoadCallback(drawChart);
+                                    google.charts.setOnLoadCallback(drawMonthlyChart);
 
-                                    function drawChart() {
+                                    function drawMonthlyChart() {
                                         // Create an array to hold the sales data for each month
                                         var salesData = [
                                             ['Month', 'Sales'],
@@ -140,22 +169,18 @@ while ($row = mysqli_fetch_assoc($result)) {
                                                 'November' => 0,
                                                 'December' => 0
                                             );
-
                                             // Populate the sales data from your database
-                                            foreach ($data as $row) {
+                                            foreach ($monthlyData as $row) {
                                                 $month = date("F", mktime(0, 0, 0, $row[0], 1));
                                                 $salesArray[$month] = $row[1];
                                             }
-
                                             // Generate the data points for each month
                                             foreach ($salesArray as $month => $sales) {
                                                 echo "['$month', $sales],";
                                             }
                                             ?>
                                         ];
-
                                         var data = google.visualization.arrayToDataTable(salesData);
-
                                         var options = {
                                             title: 'Amount (RM)',
                                             curveType: 'function',
@@ -163,11 +188,8 @@ while ($row = mysqli_fetch_assoc($result)) {
                                                 position: 'bottom'
                                             },
                                         };
-
-                                        var chart = new google.visualization.LineChart(document.getElementById('salesChart'));
-
+                                        var chart = new google.visualization.LineChart(document.getElementById('monthlySales'));
                                         chart.draw(data, options);
-
                                     }
                                 </script>
                             </div>
@@ -201,255 +223,223 @@ while ($row = mysqli_fetch_assoc($result)) {
                 <!-- ============================================================== -->
                 <!-- Email campaign chart -->
                 <!-- ============================================================== -->
-                <!-- ============================================================== -->
                 <!-- Ravenue - page-view-bounce rate -->
                 <!-- ============================================================== -->
                 <div class="row">
                     <!-- column -->
+                    <div class="col-lg-9">
+                        <div class="card shadow custom-rounded">
+                            <div class="card-body">
+                                <h4 class="card-title">Weekly Sales</h4>
+                                <!-- Display Weekly -->
+                                <div id="weeklySales" style="width: 100%; height: 300px;"></div>
+                                <?php
+                                $daysOfWeek = array('Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday');
+                                ?>
+                                <script type="text/javascript">
+                                    google.charts.load('current', {
+                                        'packages': ['corechart']
+                                    });
+                                    google.charts.setOnLoadCallback(drawWeeklyChart);
+
+                                    function drawWeeklyChart() {
+                                        // Create an array to hold the sales data for each day of the week
+                                        var salesData = [
+                                            ['Day', 'Sales'],
+                                            <?php
+                                            // Create an associative array to store sales data for each day of the week
+                                            $salesByDay = array();
+                                            foreach ($daysOfWeek as $day) {
+                                                $salesByDay[$day] = 0;
+                                            }
+
+                                            // Populate the sales data from your database
+                                            foreach ($weeklyData as $row) {
+                                                $dayOfWeek = date("l", strtotime($row[0]));
+                                                $salesByDay[$dayOfWeek] = $row[1];
+                                            }
+
+                                            // Generate the data points for each day of the week
+                                            foreach ($daysOfWeek as $day) {
+                                                echo "['$day', " . $salesByDay[$day] . "],";
+                                            }
+                                            ?>
+                                        ];
+
+                                        var data = google.visualization.arrayToDataTable(salesData);
+
+                                        var options = {
+                                            title: 'Amount (RM)',
+                                            curveType: 'function',
+                                            legend: {
+                                                position: 'bottom'
+                                            },
+                                        };
+
+                                        var chart = new google.visualization.LineChart(document.getElementById('weeklySales'));
+
+                                        chart.draw(data, options);
+                                    }
+                                </script>
+                            </div>
+                        </div>
+                    </div>
+                    <!-------- Best Selling ---------->
                     <div class="col-12">
                         <div class="card shadow custom-rounded">
                             <div class="card-body">
-                                <h4 class="card-title">Latest Sales</h4>
+                                <h4 class="card-title">Top 3 Best Selling Products</h4>
                             </div>
                             <div class="table-responsive">
                                 <table class="table table-hover">
                                     <thead>
                                         <tr>
-                                            <th class="border-top-0">NAME</th>
-                                            <th class="border-top-0">STATUS</th>
-                                            <th class="border-top-0">DATE</th>
-                                            <th class="border-top-0">PRICE</th>
+                                            <th class="border-top-0">Product</th>
+                                            <th class="border-top-0">Total Number of Sales</th>
+                                            <th class="border-top-0">Price</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
+                                        <?php
+                                        // Query to get the best-selling products
+                                        $bestSellingProductsSQL = "SELECT p.product_name, SUM(oi.qty) as total_sales, p.product_price
+                                                FROM order_items oi
+                                                INNER JOIN products p ON oi.product_id = p.product_id
+                                                GROUP BY p.product_id
+                                                ORDER BY total_sales DESC
+                                                LIMIT 3";
 
-                                            <td class="txt-oflo">Elite admin</td>
-                                            <td><span class="label label-success label-rounded">SALE</span> </td>
-                                            <td class="txt-oflo">April 18, 2021</td>
-                                            <td><span class="font-medium">$24</span></td>
-                                        </tr>
-                                        <tr>
+                                        $bestSellingProductsResult = mysqli_query($db, $bestSellingProductsSQL);
 
-                                            <td class="txt-oflo">Real Homes WP Theme</td>
-                                            <td><span class="label label-info label-rounded">EXTENDED</span></td>
-                                            <td class="txt-oflo">April 19, 2021</td>
-                                            <td><span class="font-medium">$1250</span></td>
-                                        </tr>
-                                        <tr>
+                                        while ($product = mysqli_fetch_assoc($bestSellingProductsResult)) {
+                                            $product_name = $product['product_name'];
+                                            $total_sales = $product['total_sales'];
+                                            $product_price = $product['product_price'];
 
-                                            <td class="txt-oflo">Ample Admin</td>
-                                            <td><span class="label label-purple label-rounded">Tax</span></td>
-                                            <td class="txt-oflo">April 19, 2021</td>
-                                            <td><span class="font-medium">$1250</span></td>
-                                        </tr>
-                                        <tr>
-
-                                            <td class="txt-oflo">Medical Pro WP Theme</td>
-                                            <td><span class="label label-success label-rounded">Sale</span></td>
-                                            <td class="txt-oflo">April 20, 2021</td>
-                                            <td><span class="font-medium">-$24</span></td>
-                                        </tr>
-                                        <tr>
-
-                                            <td class="txt-oflo">Hosting press html</td>
-                                            <td><span class="label label-success label-rounded">SALE</span></td>
-                                            <td class="txt-oflo">April 21, 2021</td>
-                                            <td><span class="font-medium">$24</span></td>
-                                        </tr>
-                                        <tr>
-
-                                            <td class="txt-oflo">Digital Agency PSD</td>
-                                            <td><span class="label label-danger label-rounded">Tax</span> </td>
-                                            <td class="txt-oflo">April 23, 2021</td>
-                                            <td><span class="font-medium">-$14</span></td>
-                                        </tr>
+                                            echo '<tr>';
+                                            echo '<td class="txt-oflo">' . $product_name . '</td>';
+                                            echo '<td class="txt-oflo">' . $total_sales . '</td>';
+                                            echo '<td><span class="font-medium">RM ' . number_format($product_price, 2) . '</span></td>';
+                                            echo '</tr>';
+                                        }
+                                        ?>
                                     </tbody>
                                 </table>
                             </div>
                         </div>
+
+                        <!-------- Recent Sales ---------->
+                    </div>
+                    <div class="col-12">
+                        <div class="card shadow custom-rounded">
+                            <div class="card-body">
+                                <h4 class="card-title">Recent Sales</h4>
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th class="border-top-0">Product</th>
+                                            <th class="border-top-0">Status</th>
+                                            <th class="border-top-0">Date</th>
+                                            <th class="border-top-0">Customer</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php
+                                        // Query to get recent sales
+                                        $recentSalesSQL = "SELECT p.product_name, o.status, o.order_date, u.username
+                                                FROM orders o
+                                                INNER JOIN user u ON o.user_id = u.user_id
+                                                INNER JOIN order_items oi ON o.order_id = oi.orders_id
+                                                INNER JOIN products p ON oi.product_id = p.product_id
+                                                ORDER BY o.order_date DESC
+                                                LIMIT 3";
+
+                                        $recentSalesResult = mysqli_query($db, $recentSalesSQL);
+
+                                        while ($sale = mysqli_fetch_assoc($recentSalesResult)) {
+                                            $product_name = $sale['product_name'];
+                                            $status = $sale['status'];
+                                            $order_date = $sale['order_date'];
+                                            $username = $sale['username'];
+
+                                            echo '<tr>';
+                                            echo '<td class="txt-oflo">' . $product_name . '</td>';
+                                            echo '<td><span class="label label-success label-rounded">' . $status . '</span></td>';
+                                            echo '<td class="txt-oflo">' . $order_date . '</td>';
+                                            echo '<td><span class="font-medium">' . $username . '</span></td>';
+                                            echo '</tr>';
+                                        }
+                                        ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- end card -->
                     </div>
                 </div>
-                <!-- ============================================================== -->
-                <!-- Ravenue - page-view-bounce rate -->
-                <!-- ============================================================== -->
-                <!-- ============================================================== -->
-                <!-- Recent comment and chats -->
-                <!-- ============================================================== -->
+                <!-------- Recent Reviews ---------->
                 <div class="row">
                     <!-- column -->
                     <div class="col-lg-6">
                         <div class="card shadow custom-rounded">
                             <div class="card-body">
-                                <h4 class="card-title">Recent Comments</h4>
+                                <h4 class="card-title">Recent Reviews</h4>
+                                <?php echo $message; ?>
                             </div>
-                            <div class="comment-widgets" style="height:430px;">
+                            <div class="comment-widgets" style="height:300px;">
                                 <!-- Comment Row -->
-                                <div class="d-flex flex-row comment-row mt-0">
-                                    <div class="p-2">
-                                        <img src="../../assets/images/users/1.jpg" alt="user" width="50" class="rounded-circle">
-                                    </div>
-                                    <div class="comment-text w-100">
-                                        <h6 class="font-medium">James Anderson</h6>
-                                        <span class="mb-3 d-block">Lorem Ipsum is simply dummy text of the printing
-                                            and type setting industry. </span>
-                                        <div class="comment-footer">
-                                            <span class="text-muted float-end">April 14, 2021</span>
-                                            <span class="label label-rounded label-primary">Pending</span>
-                                            <span class="action-icons">
-                                                <a href="javascript:void(0)">
-                                                    <i class="ti-pencil-alt"></i>
-                                                </a>
-                                                <a href="javascript:void(0)">
-                                                    <i class="ti-check"></i>
-                                                </a>
-                                                <a href="javascript:void(0)">
-                                                    <i class="ti-heart"></i>
-                                                </a>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Comment Row -->
-                                <div class="d-flex flex-row comment-row">
-                                    <div class="p-2">
-                                        <img src="../../assets/images/users/4.jpg" alt="user" width="50" class="rounded-circle">
-                                    </div>
-                                    <div class="comment-text active w-100">
-                                        <h6 class="font-medium">Michael Jorden</h6>
-                                        <span class="mb-3 d-block">Lorem Ipsum is simply dummy text of the printing
-                                            and type setting industry. </span>
-                                        <div class="comment-footer ">
-                                            <span class="text-muted float-end">April 14, 2021</span>
-                                            <span class="label label-success label-rounded">Approved</span>
-                                            <span class="action-icons active">
-                                                <a href="javascript:void(0)">
-                                                    <i class="ti-pencil-alt"></i>
-                                                </a>
-                                                <a href="javascript:void(0)">
-                                                    <i class="icon-close"></i>
-                                                </a>
-                                                <a href="javascript:void(0)">
-                                                    <i class="ti-heart text-danger"></i>
-                                                </a>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Comment Row -->
-                                <div class="d-flex flex-row comment-row">
-                                    <div class="p-2">
-                                        <img src="../../assets/images/users/5.jpg" alt="user" width="50" class="rounded-circle">
-                                    </div>
-                                    <div class="comment-text w-100">
-                                        <h6 class="font-medium">Johnathan Doeting</h6>
-                                        <span class="mb-3 d-block">Lorem Ipsum is simply dummy text of the printing
-                                            and type setting industry. </span>
-                                        <div class="comment-footer">
-                                            <span class="text-muted float-end">April 14, 2021</span>
-                                            <span class="label label-rounded label-danger">Rejected</span>
-                                            <span class="action-icons">
-                                                <a href="javascript:void(0)">
-                                                    <i class="ti-pencil-alt"></i>
-                                                </a>
-                                                <a href="javascript:void(0)">
-                                                    <i class="ti-check"></i>
-                                                </a>
-                                                <a href="javascript:void(0)">
-                                                    <i class="ti-heart"></i>
-                                                </a>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!-- Comment Row -->
-                                <div class="d-flex flex-row comment-row mt-0">
-                                    <div class="p-2">
-                                        <img src="../../assets/images/users/2.jpg" alt="user" width="50" class="rounded-circle">
-                                    </div>
-                                    <div class="comment-text w-100">
-                                        <h6 class="font-medium">Steve Jobs</h6>
-                                        <span class="mb-3 d-block">Lorem Ipsum is simply dummy text of the printing
-                                            and type setting industry. </span>
-                                        <div class="comment-footer">
-                                            <span class="text-muted float-end">April 14, 2021</span>
-                                            <span class="label label-rounded label-primary">Pending</span>
-                                            <span class="action-icons">
-                                                <a href="javascript:void(0)">
-                                                    <i class="ti-pencil-alt"></i>
-                                                </a>
-                                                <a href="javascript:void(0)">
-                                                    <i class="ti-check"></i>
-                                                </a>
-                                                <a href="javascript:void(0)">
-                                                    <i class="ti-heart"></i>
-                                                </a>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <?php
+                                // Query to get user reviews
+                                $userReviewsSQL = "SELECT r.review_id, r.product_id, r.user_id, r.rating, r.comment, r.date, p.product_name, u.username, p.product_image
+                                        FROM reviews r
+                                        INNER JOIN products p ON r.product_id = p.product_id
+                                        INNER JOIN user u ON r.user_id = u.user_id";
+
+                                $userReviewsResult = mysqli_query($db, $userReviewsSQL);
+
+                                if (mysqli_num_rows($userReviewsResult) > 0) {
+                                    while ($review = mysqli_fetch_assoc($userReviewsResult)) {
+                                        $review_id = $review['review_id'];
+                                        $username = $review['username'];
+                                        $comment = $review['comment'];
+                                        $date = $review['date'];
+                                        $product_name = $review['product_name'];
+                                        $image = $review['product_image'];
+
+                                        echo '<div class="d-flex flex-row comment-row mt-0">';
+                                        echo '<div class="p-2">';
+                                        echo '<img src="../../../uploads/' . $image . '" alt="user" width="50" class="rounded-circle">';
+                                        echo '</div>';
+                                        echo '<div class="comment-text w-100">';
+                                        echo '<h6 class="font-medium">' . $username . '</h6>';
+                                        echo '<span class="mb-3 d-block">' . $comment . '</span>';
+                                        echo '<div class="comment-footer">';
+                                        echo '<span class="text-muted float-end">' . $date . '</span>';
+                                        echo '<span class="label label-rounded label-primary" style="font-size: 14px;">Product : ' . $product_name . '</span>';
+
+                                        echo '<span class="action-icons">';
+                                        echo '<form method="post">';
+                                        echo '<button type="submit" style="border:none;color:red;" class="delete-button mt-2" name="delete" value="' . $review_id . '" onclick="return confirm(\'Are you sure you want to delete this review?\');">';
+                                        echo '<i class="fa fa-trash"></i>';
+                                        echo '</button>';
+                                        echo '</form>';
+                                        echo '</span>';
+                                        echo '</div>';
+                                        echo '</div>';
+                                        echo '</div>';
+                                    }
+                                } else { 
+                                    echo '<p class="text-center">No comments found</p>';
+                                }
+                                ?>
+                                <!-- end comment row -->
                             </div>
                         </div>
                     </div>
                     <!-- column -->
-                    <div class="col-lg-6">
-                        <div class="card shadow custom-rounded">
-                            <div class="card-body">
-                                <h4 class="card-title">Temp Guide</h4>
-                                <div class="d-flex align-items-center flex-row mt-4">
-                                    <div class="display-5 text-info"><i class="wi wi-day-showers"></i>
-                                        <span>73<sup>°</sup></span>
-                                    </div>
-                                    <div class="ms-2">
-                                        <h3 class="mb-0">Saturday</h3><small>Ahmedabad, India</small>
-                                    </div>
-                                </div>
-                                <table class="table no-border mini-table mt-3">
-                                    <tbody>
-                                        <tr>
-                                            <td class="text-muted">Wind</td>
-                                            <td class="font-medium">ESE 17 mph</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted">Humidity</td>
-                                            <td class="font-medium">83%</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted">Pressure</td>
-                                            <td class="font-medium">28.56 in</td>
-                                        </tr>
-                                        <tr>
-                                            <td class="text-muted">Cloud Cover</td>
-                                            <td class="font-medium">78%</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                                <ul class="row list-style-none text-center mt-4">
-                                    <li class="col-3">
-                                        <h4 class="text-info"><i class="wi wi-day-sunny"></i></h4>
-                                        <span class="d-block text-muted">09:30</span>
-                                        <h3 class="mt-1">70<sup>°</sup></h3>
-                                    </li>
-                                    <li class="col-3">
-                                        <h4 class="text-info"><i class="wi wi-day-cloudy"></i></h4>
-                                        <span class="d-block text-muted">11:30</span>
-                                        <h3 class="mt-1">72<sup>°</sup></h3>
-                                    </li>
-                                    <li class="col-3">
-                                        <h4 class="text-info"><i class="wi wi-day-hail"></i></h4>
-                                        <span class="d-block text-muted">13:30</span>
-                                        <h3 class="mt-1">75<sup>°</sup></h3>
-                                    </li>
-                                    <li class="col-3">
-                                        <h4 class="text-info"><i class="wi wi-day-sprinkle"></i></h4>
-                                        <span class="d-block text-muted">15:30</span>
-                                        <h3 class="mt-1">76<sup>°</sup></h3>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-
-                    </div>
                 </div>
                 <!-- ============================================================== -->
                 <!-- Recent comment and chats -->
@@ -457,7 +447,6 @@ while ($row = mysqli_fetch_assoc($result)) {
             </div>
             <!-- ============================================================== -->
             <!-- End Container fluid  -->
-            <!-- ============================================================== -->
             <!-- ============================================================== -->
             <!-- footer -->
             <!-- ============================================================== -->
@@ -469,13 +458,9 @@ while ($row = mysqli_fetch_assoc($result)) {
             <!-- End footer -->
             <!-- ============================================================== -->
         </div>
-        <!-- ============================================================== -->
         <!-- End Page wrapper  -->
-        <!-- ============================================================== -->
     </div>
-    <!-- ============================================================== -->
     <!-- End Wrapper -->
-    <!-- ============================================================== -->
     <!-- ============================================================== -->
     <!-- All Jquery -->
     <!-- ============================================================== -->

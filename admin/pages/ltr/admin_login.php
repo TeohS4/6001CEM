@@ -1,16 +1,37 @@
 <?php
 include '../../../connect.php';
-if (isset($_POST['submit'])) {
-  $username = $_POST['username'];
-  $password = $_POST['password'];
 
-  if (empty($_POST['username']) || empty($_POST['password'])) {
-    $message[] = 'Please fill in all the details';
-  } else if ($_POST['username'] == "admin" && $_POST['password'] == "admin") {
-    header('location: admin_product.php');
-  } else {
-    $message[] = 'Wrong username or password';
-  }
+session_start(); // Start the session
+
+if (isset($_POST['submit'])) {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+
+    if (empty($username) || empty($password)) {
+        $message[] = 'Please fill in all the details';
+    } else {
+        // Fetch the hashed password from the database based on the username
+        $query = "SELECT password FROM admin WHERE username = 'admin'";
+        $result = mysqli_query($db, $query);
+
+        if ($result && $row = mysqli_fetch_assoc($result)) {
+            $hashed_password = $row['password'];
+
+            if (password_verify($password, $hashed_password)) {
+                // Password is correct
+                $_SESSION['admin_username'] = $username; 
+                header('location: dashboard.php'); 
+            } else {
+                // Password is incorrect
+                $message[] = 'Wrong username or password';
+            }
+        } else {
+            // Admin username not found
+            $message[] = 'Wrong username or password';
+        }
+
+        mysqli_free_result($result);
+    }
 }
 ?>
 <!DOCTYPE html>

@@ -75,29 +75,30 @@ $user_id = $_SESSION['user_id'];
             </div>
             <?php
             // Retrieve orders for the user with customer name
-            $query = "SELECT o.order_id, u.username, o.amount, o.order_date
+            $query = "SELECT o.order_id, o.amount, o.order_date, o.status
             FROM orders o
             JOIN user u ON o.user_id = u.user_id
-            WHERE o.user_id = $user_id";
+            WHERE o.user_id = $user_id
+            ORDER BY o.order_date DESC";
 
             $result = mysqli_query($db, $query);
-
+            
+            $counter = 1;
             // Check if there are any orders
             if ($result && mysqli_num_rows($result) > 0) {
                 echo '<table class="table table-striped">';
-                echo '<thead><tr><th>Order ID</th><th>Customer Name</th><th>Total Amount</th><th>Date</th><th>Details</th></tr></thead>';
+                echo '<thead><tr><th>Order No</th><th>Total Amount</th><th>Date / Time</th><th>Status</th><th>Details</th></tr></thead>';
                 echo '<tbody';
 
                 while ($row = mysqli_fetch_assoc($result)) {
                     echo '<tr>';
-                    echo '<td>' . $row['order_id'] . '</td>';
-                    echo '<td>' . $row['username'] . '</td>'; 
+                    echo '<td>' . $counter++ . '</td>';
                     echo '<td><strong>RM ' . $row['amount'] . '</strong></td>';
                     echo '<td>' . $row['order_date'] . '</td>';
+                    echo '<td class="text-success font-weight-bold">' . $row['status'] . '</td>';
                     echo '<td><a href="order_details.php?order_id=' . $row['order_id'] . '"><i class="fas fa-info-circle"></i></a></td>';
                     echo '</tr>';
                 }
-
                 echo '</tbody>';
                 echo '</table>';
             } else {

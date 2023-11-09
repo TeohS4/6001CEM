@@ -81,7 +81,7 @@
         <br /><br />
 
         <div class="cu-section">
-            <h5>Rest Password</h5>
+            <h5>Reset Password</h5>
             <p>Enter a new password for login</p>
 
                 <?php
@@ -147,7 +147,7 @@
                             <br /><br />
 
                             <div class="text-center text-md-left">
-                                <button type="submit" name="password_update" class="btn btn-outline-primary btn-block">Send</button>
+                                <button type="submit" name="password_update" class="btn btn-outline-primary btn-block">Submit</button>
                             </div>
                             <div class="status"></div>
                         <!--Grid column-->

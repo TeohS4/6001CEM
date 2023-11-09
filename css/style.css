@@ -5340,6 +5340,7 @@ h6 {
   background-color: #fff;
   -webkit-transition: 0.5s;
   transition: 0.5s;
+  width: 302.5px;
 }
 
 @media (max-width: 576px) {

@@ -285,7 +285,7 @@ if (isset($_GET['delete'])) {
                                                         </div><br>
                                                         <div class="form-group">
                                                             <label><b>Stocks</b></label>
-                                                            <input type="number" name="stock" value="<?php echo $row['stock']; ?>" class="form-control">
+                                                            <input type="number" min="0" name="stock" value="<?php echo $row['stock']; ?>" class="form-control">
                                                         </div><br>
                                                         <div class="form-group">
                                                             <label><b>Insert Image</b></label>

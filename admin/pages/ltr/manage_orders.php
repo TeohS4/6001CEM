@@ -86,28 +86,31 @@ if (isset($_POST['updateStatus'])) {
                             <?php
 
                             // Fetch and display orders
-                            $query = "SELECT o.order_id, u.username, o.address, o.amount, o.order_date, o.status FROM orders o
-                            INNER JOIN user u ON o.user_id = u.user_id";
+                            $query = "SELECT o.order_id, u.username, o.address, o.amount, o.order_date, o.status 
+                            FROM orders o
+                            INNER JOIN user u ON o.user_id = u.user_id
+                            ORDER BY o.order_date DESC";
+                  
                             $result = mysqli_query($db, $query);
 
                             echo $message;
 
                             if ($result && mysqli_num_rows($result) > 0) {
-                                echo '<form method="post" action="">';
                                 echo '<table class="table table-striped">';
                                 echo '<thead>
-                                <tr>
-                                    <th>Order ID</th>
-                                    <th>Username</th>
-                                    <th>Address</th>
-                                    <th>Amount (RM)</th>
-                                    <th>Order Date</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>';
+                                        <tr>
+                                            <th>Order ID</th>
+                                            <th>Username</th>
+                                            <th>Address</th>
+                                            <th>Amount (RM)</th>
+                                            <th>Order Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>';
                                 echo '<tbody>';
                                 while ($row = mysqli_fetch_assoc($result)) {
+                                    echo '<form method="post" action="">';
                                     echo '<tr>';
                                     echo '<td>' . $row['order_id'] . '</td>';
                                     echo '<td>' . $row['username'] . '</td>';
@@ -115,24 +118,25 @@ if (isset($_POST['updateStatus'])) {
                                     echo '<td>' . $row['amount'] . '</td>';
                                     echo '<td>' . $row['order_date'] . '</td>';
                                     echo '<td>
-                <select class="form-select" name="newStatus">
-                    <option value="Delivered" ' . ($row['status'] == 'Delivered' ? 'selected' : '') . '>Delivered</option>
-                    <option value="In Transit" ' . ($row['status'] == 'In Transit' ? 'selected' : '') . '>In Transit</option>
-                    <option value="Out for Delivery" ' . ($row['status'] == 'Out for Delivery' ? 'selected' : '') . '>Out for Delivery</option>
-                </select>
-            </td>';
+                                                <select class="form-select" name="newStatus">
+                                                    <option value="Delivered" ' . ($row['status'] == 'Delivered' ? 'selected' : '') . '>Delivered</option>
+                                                    <option value="In Transit" ' . ($row['status'] == 'In Transit' ? 'selected' : '') . '>In Transit</option>
+                                                    <option value="Out for Delivery" ' . ($row['status'] == 'Out for Delivery' ? 'selected' : '') . '>Out for Delivery</option>
+                                                </select>
+                                            </td>';
                                     echo '<td>
-                <input type="hidden" name="order_id" value="' . $row['order_id'] . '">
-                <button type="submit" name="updateStatus" class="btn btn-primary">Save Changes</button>
-            </td>';
+                                                <input type="hidden" name="order_id" value="' . $row['order_id'] . '">
+                                                <button type="submit" name="updateStatus" class="btn btn-primary">Save Changes</button>
+                                            </td>';
                                     echo '</tr>';
+                                    echo '</form>';
                                 }
                                 echo '</tbody>';
                                 echo '</table>';
-                                echo '</form>';
                             } else {
                                 echo 'No orders found.';
                             }
+                            
                             ?>
                         </div>
                     </div>

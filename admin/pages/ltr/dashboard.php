@@ -194,40 +194,6 @@ if (isset($_POST['delete'])) {
                                 </script>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-lg-2">
-                        <div class="card shadow custom-rounded">
-                            <div class="card-body">
-                                <h5 class="card-title mb-1">Total Revenue</h5>
-                                <h3><?php echo 'RM ' . $totalRevenue; ?></h3>
-                            </div>
-                        </div>
-
-                        <div class="card shadow custom-rounded">
-                            <div class="card-body">
-                                <h4 class="card-title mb-0">Total Users</h4>
-                                <h2><?php echo $totalUsers; ?>
-                                </h2>
-                            </div>
-                        </div>
-
-                        <div class="card shadow custom-rounded">
-                            <div class="card-body">
-                                <h4 class="card-title mb-0">Total Orders</h4>
-                                <h2><?php echo $totalOrders; ?>
-                                </h2>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- ============================================================== -->
-                <!-- Email campaign chart -->
-                <!-- ============================================================== -->
-                <!-- Ravenue - page-view-bounce rate -->
-                <!-- ============================================================== -->
-                <div class="row">
-                    <!-- column -->
-                    <div class="col-lg-9">
                         <div class="card shadow custom-rounded">
                             <div class="card-body">
                                 <h4 class="card-title">Weekly Sales</h4>
@@ -284,6 +250,44 @@ if (isset($_POST['delete'])) {
                             </div>
                         </div>
                     </div>
+                    <div class="col-lg-3">
+                        <div class="card shadow custom-rounded">
+                            <div class="card-body">
+                                <div class="text-center bg-dark rounded-circle d-flex justify-content-center align-items-center p-2 shadow" style="width: 60px; height: 60px;">
+                                    <i class="fa-solid fa-dollar-sign text-light" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <h5 class="card-title mt-3 mb-1">Total Revenue</h5>
+                                <h3><?php echo 'RM ' . $totalRevenue; ?></h3>
+                            </div>
+                        </div>
+
+                        <div class="card shadow custom-rounded">
+                            <div class="card-body">
+                                <div class="text-center bg-dark rounded-circle d-flex justify-content-center align-items-center p-2 shadow" style="width: 60px; height: 60px;">
+                                    <i class="fa-solid fa-user text-light" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <h4 class="card-title mt-3 mb-0">Total Users</h4>
+                                <h2><?php echo $totalUsers; ?></h2>
+                            </div>
+                        </div>
+
+                        <div class="card shadow custom-rounded">
+                            <div class="card-body">
+                                <div class="text-center bg-dark rounded-circle d-flex justify-content-center align-items-center p-2 shadow" style="width: 60px; height: 60px;">
+                                    <i class="fa-solid fa-truck text-light" style="font-size: 1.5rem;"></i>
+                                </div>
+                                <h4 class="card-title mt-3 mb-0">Total Orders</h4>
+                                <h2><?php echo $totalOrders; ?></h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- ============================================================== -->
+                <!-- Email campaign chart -->
+                <!-- ============================================================== -->
+                <!-- Ravenue - page-view-bounce rate -->
+                <!-- ============================================================== -->
+                <div class="row">
                     <!-------- Best Selling ---------->
                     <div class="col-12">
                         <div class="card shadow custom-rounded">
@@ -431,7 +435,7 @@ if (isset($_POST['delete'])) {
                                         echo '</div>';
                                         echo '</div>';
                                     }
-                                } else { 
+                                } else {
                                     echo '<p class="text-center">No comments found</p>';
                                 }
                                 ?>
